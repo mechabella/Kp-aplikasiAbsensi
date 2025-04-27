@@ -42,7 +42,11 @@ class AuthService {
   Future<List<Map<String, dynamic>>> getAllUsers() async {
     try {
       final snapshot = await _firestore.collection('users').get();
-      return snapshot.docs.map((doc) => doc.data()).toList();
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        data['uid'] = doc.id; // Tambahkan UID ke data untuk keperluan edit/hapus
+        return data;
+      }).toList();
     } catch (e) {
       print('Error getting all users: $e');
       return [];
@@ -73,7 +77,7 @@ class AuthService {
           'role': role,
           'jabatan': jabatan,
           'email': email,
-          'id': id ?? credential.user!.uid, // Gunakan UID sebagai ID jika tidak ada ID khusus
+          'id': id ?? credential.user!.uid,
           'fotoUrl': fotoUrl,
         });
 
@@ -84,6 +88,44 @@ class AuthService {
       return {'error': _mapAuthError(e.code)};
     } catch (e) {
       return {'error': 'Terjadi kesalahan: $e'};
+    }
+  }
+
+  // Fungsi untuk mengedit data pengguna (hanya untuk kepala cabang)
+  Future<Map<String, dynamic>> updateUser({
+    required String uid,
+    required String nama,
+    required String role,
+    required String jabatan,
+    required String email,
+    String? id,
+    String fotoUrl = '',
+  }) async {
+    try {
+      await _firestore.collection('users').doc(uid).update({
+        'nama': nama,
+        'role': role,
+        'jabatan': jabatan,
+        'email': email,
+        'id': id ?? uid,
+        'fotoUrl': fotoUrl,
+      });
+      return {'success': true};
+    } catch (e) {
+      return {'error': 'Gagal memperbarui pengguna: $e'};
+    }
+  }
+
+  // Fungsi untuk menghapus pengguna (hanya untuk kepala cabang)
+  Future<Map<String, dynamic>> deleteUser(String uid) async {
+    try {
+      // Hapus data dari Firestore
+      await _firestore.collection('users').doc(uid).delete();
+      // Note: Menghapus user dari Authentication memerlukan user tersebut login,
+      // atau menggunakan Firebase Admin SDK. Untuk saat ini, kita hanya hapus dari Firestore.
+      return {'success': true};
+    } catch (e) {
+      return {'error': 'Gagal menghapus pengguna: $e'};
     }
   }
 
