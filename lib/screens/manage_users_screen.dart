@@ -11,6 +11,7 @@ class ManageUsersScreen extends StatefulWidget {
 
 class _ManageUsersScreenState extends State<ManageUsersScreen> {
   List<Map<String, dynamic>> users = [];
+  String? errorMessage;
 
   @override
   void initState() {
@@ -20,10 +21,18 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
 
   Future<void> _loadUsers() async {
     final authService = Provider.of<AuthService>(context, listen: false);
-    final loadedUsers = await authService.getAllUsers();
-    setState(() {
-      users = loadedUsers;
-    });
+    try {
+      final loadedUsers = await authService.getAllUsers();
+      setState(() {
+        users = loadedUsers;
+        errorMessage = null;
+      });
+    } catch (e) {
+      setState(() {
+        users = [];
+        errorMessage = 'Gagal memuat data: $e';
+      });
+    }
   }
 
   @override
@@ -34,63 +43,65 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
         backgroundColor: const Color(0xFF001F54),
         foregroundColor: Colors.white,
       ),
-      body: users.isEmpty
-          ? const Center(child: Text('Tidak ada data karyawan'))
-          : ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: users.length + 1, // +1 untuk tombol tambah karyawan
-              itemBuilder: (context, index) {
-                if (index == 0) {
-                  // Tombol Tambah Karyawan
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: ElevatedButton.icon(
-                      onPressed: () => _showAddUserDialog(context),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF001F54),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+      body: errorMessage != null
+          ? Center(child: Text(errorMessage!))
+          : users.isEmpty
+              ? const Center(child: Text('Tidak ada data karyawan'))
+              : ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: users.length + 1, // +1 untuk tombol tambah karyawan
+                  itemBuilder: (context, index) {
+                    if (index == 0) {
+                      // Tombol Tambah Karyawan
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        child: ElevatedButton.icon(
+                          onPressed: () => _showAddUserDialog(context),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF001F54),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          icon: const Icon(Icons.add),
+                          label: const Text(
+                            'Tambah Karyawan',
+                            style: TextStyle(fontSize: 16),
+                          ),
                         ),
-                      ),
-                      icon: const Icon(Icons.add),
-                      label: const Text(
-                        'Tambah Karyawan',
-                        style: TextStyle(fontSize: 16),
-                      ),
-                    ),
-                  );
-                }
+                      );
+                    }
 
-                final user = users[index - 1];
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundImage: user['fotoUrl'] != null && user['fotoUrl'].isNotEmpty
-                          ? NetworkImage(user['fotoUrl'])
-                          : const AssetImage('assets/default_profile.png') as ImageProvider,
-                    ),
-                    title: Text(user['nama'] ?? 'Unknown'),
-                    subtitle: Text('${user['id'] ?? ''} - ${user['jabatan'] ?? 'Unknown'}'),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.edit, color: Colors.blue),
-                          onPressed: () => _showEditUserDialog(context, user),
+                    final user = users[index - 1];
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      child: ListTile(
+                        leading: CircleAvatar(
+                          backgroundImage: user['fotoUrl'] != null && user['fotoUrl'].isNotEmpty
+                              ? NetworkImage(user['fotoUrl'])
+                              : const AssetImage('assets/default_profile.png') as ImageProvider,
                         ),
-                        IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.red),
-                          onPressed: () => _showDeleteConfirmationDialog(context, user),
+                        title: Text(user['nama'] ?? 'Unknown'),
+                        subtitle: Text('${user['id'] ?? ''} - ${user['jabatan'] ?? 'Unknown'}'),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.edit, color: Colors.blue),
+                              onPressed: () => _showEditUserDialog(context, user),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete, color: Colors.red),
+                              onPressed: () => _showDeleteConfirmationDialog(context, user),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
+                      ),
+                    );
+                  },
+                ),
     );
   }
 
