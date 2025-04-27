@@ -113,29 +113,27 @@ class WaveClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
     final path = Path();
-    path.lineTo(0, size.height - 80); // Start from top-left, go down
     
-    // Create the curved wave effect
-    final firstControlPoint = Offset(size.width * 0.25, size.height);
-    final firstEndPoint = Offset(size.width * 0.5, size.height - 30);
+    // Start at top-left corner
+    path.moveTo(0, 0);
+    
+    // Draw straight line down to where the curve starts
+    path.lineTo(0, size.height * 0.7); // Start curve at 70% of height from top
+    
+    // Create a simple curve that matches the image
+    // Using a single quadratic bezier curve for a smooth transition
     path.quadraticBezierTo(
-      firstControlPoint.dx, 
-      firstControlPoint.dy, 
-      firstEndPoint.dx, 
-      firstEndPoint.dy
+      size.width * 0.3,  // Control point x at 30% of width
+      size.height * 1.0, // Control point y slightly below the bottom edge
+      size.width,        // End point x (right edge)
+      size.height * 0.5  // End point y at 50% of height
     );
     
-    final secondControlPoint = Offset(size.width * 0.75, size.height - 80);
-    final secondEndPoint = Offset(size.width, size.height - 40);
-    path.quadraticBezierTo(
-      secondControlPoint.dx, 
-      secondControlPoint.dy, 
-      secondEndPoint.dx, 
-      secondEndPoint.dy
-    );
+    // Draw line up to top-right corner
+    path.lineTo(size.width, 0);
     
-    path.lineTo(size.width, 0); // Line to top-right
-    path.close(); // Close the path
+    // Close the path
+    path.close();
     
     return path;
   }

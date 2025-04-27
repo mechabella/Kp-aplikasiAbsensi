@@ -1,3 +1,4 @@
+import 'package:absensi_app/screens/manage_users_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
@@ -35,6 +36,8 @@ class MyApp extends StatelessWidget {
         home: const SplashScreen(),
         routes: {
           '/login': (context) => const LoginScreen(),
+          '/home': (context) => const HomeScreen(),
+          '/manage-users': (context) => const ManageUsersScreen(),
         },
       ),
     );
