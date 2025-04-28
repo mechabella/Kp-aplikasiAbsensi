@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../services/auth_services.dart';
 import 'manage_users_screen.dart';
+import 'clock_in_screen.dart'; // Import halaman baru
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -13,7 +14,6 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final authService = Provider.of<AuthService>(context);
 
-    // Set status bar to match the dark blue header
     SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
       statusBarColor: Color(0xFF001F54),
       statusBarIconBrightness: Brightness.light,
@@ -56,9 +56,7 @@ class HomeScreen extends StatelessWidget {
               body: SafeArea(
                 child: Column(
                   children: [
-                    // Header dengan user info dan logout button
                     _buildHeader(context, userData, authService, role),
-                    // Main content
                     Expanded(
                       child: SingleChildScrollView(
                         child: Padding(
@@ -67,10 +65,8 @@ class HomeScreen extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const SizedBox(height: 16),
-                              // Attendance Card
                               _buildAttendanceCard(context, role),
                               const SizedBox(height: 20),
-                              // Attendance History (dengan white background)
                               _buildAttendanceHistory(),
                             ],
                           ),
@@ -90,10 +86,9 @@ class HomeScreen extends StatelessWidget {
   Widget _buildHeader(BuildContext context, Map<String, dynamic> userData, AuthService authService, String role) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      color: const Color(0xFF001F54), // Dark navy blue
+      color: const Color(0xFF001F54),
       child: Row(
         children: [
-          // Profile Image
           CircleAvatar(
             radius: 18,
             backgroundImage: userData['fotoUrl'] != null && userData['fotoUrl'].isNotEmpty
@@ -101,7 +96,6 @@ class HomeScreen extends StatelessWidget {
                 : const AssetImage('assets/default_profile.png') as ImageProvider,
           ),
           const SizedBox(width: 12),
-          // User Info
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -124,7 +118,6 @@ class HomeScreen extends StatelessWidget {
               ],
             ),
           ),
-          // Tombol navigasi ke ManageUsersScreen (hanya untuk kepala cabang)
           if (role == 'kepala_cabang')
             Builder(
               builder: (context) => IconButton(
@@ -137,7 +130,6 @@ class HomeScreen extends StatelessWidget {
                 },
               ),
             ),
-          // Logout Button
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.white, size: 22),
             onPressed: () async {
@@ -163,7 +155,6 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Live Attendance Text
             const Text(
               'Live Attendance',
               style: TextStyle(
@@ -173,7 +164,6 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            // Current Time - CENTERED
             StreamBuilder<DateTime>(
               stream: Stream.periodic(const Duration(seconds: 1), (_) => DateTime.now()),
               builder: (context, snapshot) {
@@ -197,7 +187,6 @@ class HomeScreen extends StatelessWidget {
                 );
               },
             ),
-            // Current Date - CENTERED
             Text(
               DateFormat('EEE, dd MMMM yyyy').format(DateTime.now()),
               style: TextStyle(
@@ -206,13 +195,11 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            // Satu-satunya Divider/pemisah
             Divider(
               color: Colors.grey[300],
               thickness: 1,
             ),
             const SizedBox(height: 24),
-            // Office Hours Text
             const Text(
               'Office Hours',
               style: TextStyle(
@@ -222,7 +209,6 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            // Office Hours Time
             const Text(
               '08:00 AM - 05:00 PM',
               style: TextStyle(
@@ -232,19 +218,16 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            // Clock In/Out Buttons dengan height lebih besar
             Row(
               children: [
-                // Clock In Button
                 Expanded(
                   child: ElevatedButton(
                     onPressed: role == 'karyawan'
                         ? () {
-                            // Navigate to attendance screen
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => const AttendanceScreen(),
+                                builder: (context) => const ClockInScreen(),
                               ),
                             );
                           }
@@ -267,7 +250,6 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 12),
-                // Clock Out Button
                 Expanded(
                   child: Builder(
                     builder: (context) => ElevatedButton(
@@ -324,7 +306,6 @@ class HomeScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Attendance History Header with Icon
           Row(
             children: [
               const Icon(
@@ -344,7 +325,6 @@ class HomeScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          // Attendance History List
           ListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -378,23 +358,6 @@ class HomeScreen extends StatelessWidget {
             },
           ),
         ],
-      ),
-    );
-  }
-}
-
-class AttendanceScreen extends StatelessWidget {
-  const AttendanceScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Attendance'),
-        backgroundColor: const Color(0xFF001F54),
-      ),
-      body: const Center(
-        child: Text('Attendance Screen (coming soon)'),
       ),
     );
   }
