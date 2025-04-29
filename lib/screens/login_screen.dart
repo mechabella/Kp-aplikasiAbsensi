@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+<<<<<<< HEAD
 import '../services/auth_service.dart';
+=======
+import '../services/auth_services.dart';
+>>>>>>> a72204788d4b988f571cf353c3b0d261fe1cef18
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -44,7 +48,11 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
+<<<<<<< HEAD
 
+=======
+    
+>>>>>>> a72204788d4b988f571cf353c3b0d261fe1cef18
     return Scaffold(
       body: Stack(
         children: [
@@ -54,7 +62,11 @@ class _LoginScreenState extends State<LoginScreen> {
             height: size.height,
             color: const Color(0xFF001F54), // Dark navy blue
           ),
+<<<<<<< HEAD
 
+=======
+          
+>>>>>>> a72204788d4b988f571cf353c3b0d261fe1cef18
           // Yellow curved background
           ClipPath(
             clipper: WaveClipper(),
@@ -64,7 +76,11 @@ class _LoginScreenState extends State<LoginScreen> {
               color: const Color(0xFFFFE600), // Bright yellow
             ),
           ),
+<<<<<<< HEAD
 
+=======
+          
+>>>>>>> a72204788d4b988f571cf353c3b0d261fe1cef18
           // Status bar area (to match the image's rounded corners at top)
           Positioned(
             top: 0,
@@ -81,7 +97,11 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
           ),
+<<<<<<< HEAD
 
+=======
+          
+>>>>>>> a72204788d4b988f571cf353c3b0d261fe1cef18
           // Logo
           Positioned(
             top: size.height * 0.12,
@@ -95,7 +115,11 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
           ),
+<<<<<<< HEAD
 
+=======
+          
+>>>>>>> a72204788d4b988f571cf353c3b0d261fe1cef18
           // Welcome text
           Positioned(
             top: size.height * 0.32,
@@ -122,7 +146,11 @@ class _LoginScreenState extends State<LoginScreen> {
               ],
             ),
           ),
+<<<<<<< HEAD
 
+=======
+          
+>>>>>>> a72204788d4b988f571cf353c3b0d261fe1cef18
           // Login card
           Positioned(
             top: size.height * 0.43,
@@ -159,8 +187,12 @@ class _LoginScreenState extends State<LoginScreen> {
                     decoration: InputDecoration(
                       hintText: 'Enter your username',
                       hintStyle: TextStyle(color: Colors.grey.shade400),
+<<<<<<< HEAD
                       contentPadding: const EdgeInsets.symmetric(
                           horizontal: 15, vertical: 15),
+=======
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+>>>>>>> a72204788d4b988f571cf353c3b0d261fe1cef18
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                         borderSide: BorderSide(color: Colors.grey.shade300),
@@ -176,9 +208,15 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     keyboardType: TextInputType.emailAddress,
                   ),
+<<<<<<< HEAD
 
                   const SizedBox(height: 15),
 
+=======
+                  
+                  const SizedBox(height: 15),
+                  
+>>>>>>> a72204788d4b988f571cf353c3b0d261fe1cef18
                   // Password field
                   const Text(
                     'Password',
@@ -194,8 +232,12 @@ class _LoginScreenState extends State<LoginScreen> {
                     decoration: InputDecoration(
                       hintText: 'Enter your password',
                       hintStyle: TextStyle(color: Colors.grey.shade400),
+<<<<<<< HEAD
                       contentPadding: const EdgeInsets.symmetric(
                           horizontal: 15, vertical: 15),
+=======
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+>>>>>>> a72204788d4b988f571cf353c3b0d261fe1cef18
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                         borderSide: BorderSide(color: Colors.grey.shade300),
@@ -210,9 +252,13 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       suffixIcon: IconButton(
                         icon: Icon(
+<<<<<<< HEAD
                           _obscurePassword
                               ? Icons.visibility_off
                               : Icons.visibility,
+=======
+                          _obscurePassword ? Icons.visibility_off : Icons.visibility,
+>>>>>>> a72204788d4b988f571cf353c3b0d261fe1cef18
                           color: Colors.grey,
                           size: 20,
                         ),
@@ -223,9 +269,15 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     obscureText: _obscurePassword,
                   ),
+<<<<<<< HEAD
 
                   const SizedBox(height: 15),
 
+=======
+                  
+                  const SizedBox(height: 15),
+                  
+>>>>>>> a72204788d4b988f571cf353c3b0d261fe1cef18
                   // Remember me and Forgot Password
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -257,14 +309,22 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ],
                       ),
+<<<<<<< HEAD
 
+=======
+                      
+>>>>>>> a72204788d4b988f571cf353c3b0d261fe1cef18
                       // Forgot Password
                       TextButton(
                         onPressed: () {
                           // TODO: Implementasi Forget Password
                           ScaffoldMessenger.of(context).showSnackBar(
+<<<<<<< HEAD
                             const SnackBar(
                                 content: Text('Forget Password (coming soon)')),
+=======
+                            const SnackBar(content: Text('Forget Password (coming soon)')),
+>>>>>>> a72204788d4b988f571cf353c3b0d261fe1cef18
                           );
                         },
                         style: TextButton.styleFrom(
@@ -283,6 +343,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ],
                   ),
+<<<<<<< HEAD
 
                   const SizedBox(height: 25),
 
@@ -312,6 +373,36 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                         ),
+=======
+                  
+                  const SizedBox(height: 25),
+                  
+                  // Login button
+                  _isLoading
+                    ? const Center(
+                        child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF001F54)),
+                        ),
+                      )
+                    : ElevatedButton(
+                        onPressed: _login,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF001F54),
+                          minimumSize: const Size(double.infinity, 50),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: const Text(
+                          'Login',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+>>>>>>> a72204788d4b988f571cf353c3b0d261fe1cef18
                 ],
               ),
             ),
@@ -326,6 +417,7 @@ class WaveClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
     final path = Path();
+<<<<<<< HEAD
 
     // Start at top-left corner
     path.moveTo(0, 0);
@@ -348,9 +440,36 @@ class WaveClipper extends CustomClipper<Path> {
     // Close the path (connects back to top-left)
     path.close();
 
+=======
+    
+    // Start at top-left corner
+    path.moveTo(0, 0);
+    
+    // Draw line to the left side where the curve will start
+    path.lineTo(0, size.height - 60);
+    
+    // Create a half-circle curve at the bottom
+    path.quadraticBezierTo(
+      size.width / 2,  // Control point x (middle of width)
+      size.height + 40, // Control point y (below the bottom edge)
+      size.width,      // End point x (right edge)
+      size.height - 60 // End point y (same height as where we started the curve)
+    );
+    
+    // Draw line up to top-right corner
+    path.lineTo(size.width, 0);
+    
+    // Close the path (connects back to top-left)
+    path.close();
+    
+>>>>>>> a72204788d4b988f571cf353c3b0d261fe1cef18
     return path;
   }
 
   @override
   bool shouldReclip(CustomClipper<Path> oldClipper) => false;
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> a72204788d4b988f571cf353c3b0d261fe1cef18

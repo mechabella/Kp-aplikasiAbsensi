@@ -43,8 +43,11 @@ dependencies:
   http: ^1.0.0
   path_provider: ^2.0.0
   path: ^1.8.0
+<<<<<<< HEAD
   file_picker: ^6.1.1
   url_launcher: ^6.2.0
+=======
+>>>>>>> a72204788d4b988f571cf353c3b0d261fe1cef18
 
 
   # The following adds the Cupertino Icons font to your application.

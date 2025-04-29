@@ -52,7 +52,8 @@ class ClockInSuccessScreen extends StatelessWidget {
                   const SizedBox(height: 8),
                   _buildDetailRow('Location', '$latitude, $longitude'),
                   const SizedBox(height: 8),
-                  _buildDetailRow('Clock In', DateFormat('dd MMMM yyyy, HH:mm').format(timestamp)),
+                  _buildDetailRow('Clock In',
+                      DateFormat('dd MMMM yyyy, HH:mm').format(timestamp)),
                 ],
               ),
             ),
@@ -92,7 +93,8 @@ class ClockInSuccessScreen extends StatelessWidget {
           width: 100,
           child: Text(
             label,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.grey),
+            style: const TextStyle(
+                fontSize: 16, fontWeight: FontWeight.w500, color: Colors.grey),
           ),
         ),
         Expanded(

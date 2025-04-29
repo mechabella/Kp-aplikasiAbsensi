@@ -42,7 +42,10 @@
             <data android:mimeType="text/plain"/>
         </intent>
     </queries>
+<<<<<<< HEAD
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+=======
+>>>>>>> a72204788d4b988f571cf353c3b0d261fe1cef18
 </manifest>

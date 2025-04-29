@@ -148,12 +148,14 @@ class _ClockInScreenState extends State<ClockInScreen> {
                       width: double.infinity,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.blue.shade100, width: 2),
+                        border:
+                            Border.all(color: Colors.blue.shade100, width: 2),
                       ),
                       child: Column(
                         children: [
                           ClipRRect(
-                            borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
+                            borderRadius: const BorderRadius.vertical(
+                                top: Radius.circular(10)),
                             child: Container(
                               height: 300,
                               width: double.infinity,
@@ -162,9 +164,12 @@ class _ClockInScreenState extends State<ClockInScreen> {
                                       File(_imageFile!.path),
                                       fit: BoxFit.cover,
                                     )
-                                  : (_cameraController != null && _cameraController!.value.isInitialized)
+                                  : (_cameraController != null &&
+                                          _cameraController!
+                                              .value.isInitialized)
                                       ? CameraPreview(_cameraController!)
-                                      : const Center(child: Text('Kamera tidak tersedia')),
+                                      : const Center(
+                                          child: Text('Kamera tidak tersedia')),
                             ),
                           ),
                           // Tombol Ambil Gambar / Foto Ulang
@@ -180,11 +185,15 @@ class _ClockInScreenState extends State<ClockInScreen> {
                                     }
                                   : _takePicture,
                               icon: Icon(
-                                _imageFile != null ? Icons.refresh : Icons.camera_alt,
+                                _imageFile != null
+                                    ? Icons.refresh
+                                    : Icons.camera_alt,
                                 color: Colors.white,
                               ),
                               label: Text(
-                                _imageFile != null ? 'Foto Ulang' : 'Ambil Gambar',
+                                _imageFile != null
+                                    ? 'Foto Ulang'
+                                    : 'Ambil Gambar',
                                 style: const TextStyle(color: Colors.white),
                               ),
                               style: ElevatedButton.styleFrom(
@@ -192,7 +201,8 @@ class _ClockInScreenState extends State<ClockInScreen> {
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(30),
                                 ),
-                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 12),
                                 minimumSize: const Size(200, 0),
                               ),
                             ),
@@ -218,7 +228,8 @@ class _ClockInScreenState extends State<ClockInScreen> {
                           decoration: InputDecoration(
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: Colors.grey.shade300),
+                              borderSide:
+                                  BorderSide(color: Colors.grey.shade300),
                             ),
                           ),
                           items: const [
@@ -253,14 +264,16 @@ class _ClockInScreenState extends State<ClockInScreen> {
                         ),
                         const SizedBox(height: 8),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 16),
                           decoration: BoxDecoration(
                             border: Border.all(color: Colors.grey.shade300),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.location_on_outlined, color: Colors.grey),
+                              const Icon(Icons.location_on_outlined,
+                                  color: Colors.grey),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Text(
@@ -289,7 +302,8 @@ class _ClockInScreenState extends State<ClockInScreen> {
               onPressed: () {
                 if (_imageFile == null) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Harap ambil foto terlebih dahulu')),
+                    const SnackBar(
+                        content: Text('Harap ambil foto terlebih dahulu')),
                   );
                   return;
                 }

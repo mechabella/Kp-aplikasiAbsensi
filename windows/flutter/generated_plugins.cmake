@@ -6,7 +6,10 @@ list(APPEND FLUTTER_PLUGIN_LIST
   cloud_firestore
   firebase_auth
   firebase_core
+<<<<<<< HEAD
   url_launcher_windows
+=======
+>>>>>>> a72204788d4b988f571cf353c3b0d261fe1cef18
 )
 
 list(APPEND FLUTTER_FFI_PLUGIN_LIST
