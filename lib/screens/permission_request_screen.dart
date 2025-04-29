@@ -80,7 +80,7 @@ class _PermissionRequestScreenState extends State<PermissionRequestScreen> {
     });
 
     try {
-      String fileUrl = '';
+      String? fileUrl = '';
       if (_file != null) {
         // Unggah file ke Google Drive
         fileUrl = await DriveHelper.uploadToGoogleDrive(

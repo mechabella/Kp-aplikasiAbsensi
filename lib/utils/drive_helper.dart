@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:flutter/services.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:googleapis/drive/v3.dart' as drive;
 import 'package:googleapis_auth/auth_io.dart';
 import 'package:http/http.dart' as http;
@@ -7,11 +7,16 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 
 class DriveHelper {
-  static const String folderId = 'YOUR_GOOGLE_DRIVE_FOLDER_ID'; // Ganti dengan ID folder kamu
+  // Ganti dengan ID folder Google Drive yang valid
+  static const String folderId = 'YOUR_ACTUAL_GOOGLE_DRIVE_FOLDER_ID'; // Contoh: '1aBcDeFgHiJkLmNoPqRsTuVwXyZ'
 
-  static Future<String?> uploadToGoogleDrive(File file, {required String assetCredentialsPath}) async {
+  static Future<String?> uploadToGoogleDrive(
+    File file, {
+    required String assetCredentialsPath,
+  }) async {
     try {
-      final credentials = await DefaultAssetBundle.of(PlatformAssetBundle()).loadString(assetCredentialsPath);
+      // Gunakan rootBundle untuk memuat kredensial tanpa BuildContext
+      final credentials = await rootBundle.loadString(assetCredentialsPath);
       final serviceAccountCredentials = ServiceAccountCredentials.fromJson(credentials);
       final scopes = [drive.DriveApi.driveFileScope];
       final authClient = await clientViaServiceAccount(serviceAccountCredentials, scopes);
