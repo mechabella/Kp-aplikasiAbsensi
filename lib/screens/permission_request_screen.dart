@@ -3,14 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:googleapis/drive/v3.dart' as drive;
-import 'package:googleapis_auth/auth_io.dart';
-import 'package:http/http.dart' as http;
-import 'package:path_provider/path_provider.dart';
-import 'package:path/path.dart' as path;
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/auth_service.dart';
 import '../models/permission.dart';
+import '../utils/drive_helper.dart';
 
 class PermissionRequestScreen extends StatefulWidget {
   const PermissionRequestScreen({super.key});
@@ -29,9 +25,6 @@ class _PermissionRequestScreenState extends State<PermissionRequestScreen> {
   String? _fileName;
   bool _isLoading = false;
 
-  // Google Drive folder ID (ganti dengan ID folder kamu di Google Drive)
-  final String _folderId = 'YOUR_GOOGLE_DRIVE_FOLDER_ID';
-
   Future<void> _selectDate(BuildContext context, bool isFromDate) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -43,6 +36,10 @@ class _PermissionRequestScreenState extends State<PermissionRequestScreen> {
       setState(() {
         if (isFromDate) {
           _fromDate = picked;
+          // Reset _toDate jika lebih awal dari _fromDate
+          if (_toDate != null && _toDate!.isBefore(picked)) {
+            _toDate = null;
+          }
         } else {
           _toDate = picked;
         }
@@ -63,43 +60,6 @@ class _PermissionRequestScreenState extends State<PermissionRequestScreen> {
     }
   }
 
-  Future<String?> _uploadToGoogleDrive(File file) async {
-    try {
-      final credentials = await DefaultAssetBundle.of(context).loadString('assets/absensiapp-123456789.json');
-      final serviceAccountCredentials = ServiceAccountCredentials.fromJson(credentials);
-      final scopes = [drive.DriveApi.driveFileScope];
-      final authClient = await clientViaServiceAccount(serviceAccountCredentials, scopes);
-
-      final driveApi = drive.DriveApi(authClient);
-
-      final tempDir = await getTemporaryDirectory();
-      final tempPath = path.join(tempDir.path, path.basename(file.path));
-      await file.copy(tempPath);
-
-      final driveFile = drive.File();
-      driveFile.name = path.basename(tempPath);
-      driveFile.parents = [_folderId];
-
-      final stream = http.ByteStream(Stream.castFrom(File(tempPath).openRead()));
-      final media = drive.Media(stream, await File(tempPath).length());
-      final uploadedFile = await driveApi.files.create(driveFile, uploadMedia: media);
-
-      final fileId = uploadedFile.id;
-      await driveApi.permissions.create(
-        drive.Permission()..role = 'reader'..type = 'anyone',
-        fileId!,
-      );
-      final fileDetails = await driveApi.files.get(fileId, $fields: 'webViewLink') as drive.File;
-      final fileUrl = fileDetails.webViewLink;
-
-      authClient.close();
-      return fileUrl;
-    } catch (e) {
-      print('Error uploading to Google Drive: $e');
-      return null;
-    }
-  }
-
   Future<void> _submitPermission() async {
     if (!_formKey.currentState!.validate()) return;
     if (_fromDate == null || _toDate == null) {
@@ -108,9 +68,9 @@ class _PermissionRequestScreenState extends State<PermissionRequestScreen> {
       );
       return;
     }
-    if (_file == null) {
+    if (_toDate!.isBefore(_fromDate!)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Harap unggah file pendukung')),
+        const SnackBar(content: Text('Tanggal selesai tidak boleh sebelum tanggal mulai')),
       );
       return;
     }
@@ -120,10 +80,16 @@ class _PermissionRequestScreenState extends State<PermissionRequestScreen> {
     });
 
     try {
-      // Unggah file ke Google Drive
-      final fileUrl = await _uploadToGoogleDrive(_file!);
-      if (fileUrl == null) {
-        throw Exception('Gagal mengunggah file ke Google Drive');
+      String fileUrl = '';
+      if (_file != null) {
+        // Unggah file ke Google Drive
+        fileUrl = await DriveHelper.uploadToGoogleDrive(
+          _file!,
+          assetCredentialsPath: 'assets/absensiapp-123456789.json',
+        );
+        if (fileUrl == null) {
+          throw Exception('Gagal mengunggah file ke Google Drive');
+        }
       }
 
       // Hitung jumlah hari
@@ -174,6 +140,12 @@ class _PermissionRequestScreenState extends State<PermissionRequestScreen> {
         _isLoading = false;
       });
     }
+  }
+
+  bool _isImageFile(String fileName) {
+    final imageExtensions = ['jpg', 'jpeg', 'png', 'gif'];
+    final extension = fileName.split('.').last.toLowerCase();
+    return imageExtensions.contains(extension);
   }
 
   @override
@@ -267,7 +239,8 @@ class _PermissionRequestScreenState extends State<PermissionRequestScreen> {
                     ),
                     const SizedBox(height: 16),
                     // Unggah File
-                    const Text('File Pendukung', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                    const Text('File Pendukung (Opsional)',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
                     Row(
                       children: [
                         Expanded(
@@ -286,6 +259,17 @@ class _PermissionRequestScreenState extends State<PermissionRequestScreen> {
                         ),
                       ],
                     ),
+                    // Preview File jika gambar
+                    if (_file != null && _fileName != null && _isImageFile(_fileName!))
+                      Padding(
+                        padding: const EdgeInsets.only(top: 16.0),
+                        child: Image.file(
+                          _file!,
+                          height: 200,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
                     const SizedBox(height: 24),
                     // Tombol Submit
                     ElevatedButton(
