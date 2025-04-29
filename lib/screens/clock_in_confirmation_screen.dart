@@ -24,7 +24,8 @@ class ClockInConfirmationScreen extends StatefulWidget {
   });
 
   @override
-  _ClockInConfirmationScreenState createState() => _ClockInConfirmationScreenState();
+  _ClockInConfirmationScreenState createState() =>
+      _ClockInConfirmationScreenState();
 }
 
 class _ClockInConfirmationScreenState extends State<ClockInConfirmationScreen> {
@@ -42,7 +43,7 @@ class _ClockInConfirmationScreenState extends State<ClockInConfirmationScreen> {
       final file = File(widget.imageFile.path);
       final photoUrl = await DriveHelper.uploadToGoogleDrive(
         file,
-        assetCredentialsPath: 'assets/absensiapp-123456789.json',
+        assetCredentialsPath: 'assets/absensi-458109-453307b07c38.json',
       );
       if (photoUrl == null) {
         throw Exception('Gagal mengunggah foto ke Google Drive');
@@ -98,6 +99,7 @@ class _ClockInConfirmationScreenState extends State<ClockInConfirmationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
@@ -107,121 +109,95 @@ class _ClockInConfirmationScreenState extends State<ClockInConfirmationScreen> {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: Stack(
-        children: [
-          // Background dengan garis vertikal
-          Container(
-            color: Colors.blue.shade50,
-            child: Row(
-              children: List.generate(
-                10,
-                (index) => Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      border: Border(
-                        right: BorderSide(
-                          color: Colors.blue.shade100,
-                          width: 1,
+      body: SafeArea(
+        child: Center(
+          child: _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : _errorMessage != null
+                  ? Center(child: Text('Error: $_errorMessage'))
+                  : Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // Ikon user
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF001F54),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(
+                            Icons.person,
+                            size: 24,
+                            color: Colors.white,
+                          ),
                         ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-          // Content
-          SafeArea(
-            child: Center(
-              child: _isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : _errorMessage != null
-                      ? Center(child: Text('Error: $_errorMessage'))
-                      : Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            // Ikon user
-                            Container(
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF001F54),
+                        const SizedBox(height: 16),
+                        // Pesan pratinjau
+                        const Text(
+                          'Confirm Clock-In',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          DateFormat('dd MMM yyyy').format(DateTime.now()),
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          DateFormat('HH:mm').format(DateTime.now()),
+                          style: const TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 40.0),
+                          child: Text(
+                            "Please review your clock-in details. Press 'Confirm' to proceed.",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(fontSize: 14, color: Colors.grey),
+                          ),
+                        ),
+                        const SizedBox(height: 40),
+                        // Tombol Confirm
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                          child: ElevatedButton(
+                            onPressed: _confirmClockIn,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF001F54),
+                              foregroundColor: Colors.white,
+                              minimumSize: const Size(double.infinity, 50),
+                              shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              child: const Icon(
-                                Icons.person,
-                                size: 24,
-                                color: Colors.white,
-                              ),
                             ),
-                            const SizedBox(height: 16),
-                            // Pesan pratinjau
-                            const Text(
-                              'Confirm Clock-In',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              DateFormat('dd MMM yyyy').format(DateTime.now()),
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              DateFormat('HH:mm').format(DateTime.now()),
-                              style: const TextStyle(
-                                fontSize: 32,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black,
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            const Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 40.0),
-                              child: Text(
-                                "Please review your clock-in details. Press 'Confirm' to proceed.",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(fontSize: 14, color: Colors.grey),
-                              ),
-                            ),
-                            const SizedBox(height: 40),
-                            // Tombol Confirm
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                              child: ElevatedButton(
-                                onPressed: _confirmClockIn,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF001F54),
-                                  foregroundColor: Colors.white,
-                                  minimumSize: const Size(double.infinity, 50),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                ),
-                                child: const Text('Confirm'),
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            // Tautan Cancel
-                            TextButton(
-                              onPressed: () {
-                                Navigator.pop(context);
-                              },
-                              child: const Text(
-                                "Cancel",
-                                style: TextStyle(color: Color(0xFF001F54)),
-                              ),
-                            ),
-                          ],
+                            child: const Text('Confirm'),
+                          ),
                         ),
-            ),
-          ),
-        ],
+                        const SizedBox(height: 16),
+                        // Tautan Cancel
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          child: const Text(
+                            "Cancel",
+                            style: TextStyle(color: Color(0xFF001F54)),
+                          ),
+                        ),
+                      ],
+                    ),
+        ),
       ),
     );
   }
