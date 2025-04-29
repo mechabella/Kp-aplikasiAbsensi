@@ -7,12 +7,15 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 
 class DriveHelper {
-  // Ganti dengan ID folder Google Drive yang valid
-  static const String folderId = 'YOUR_ACTUAL_GOOGLE_DRIVE_FOLDER_ID'; // Contoh: '1aBcDeFgHiJkLmNoPqRsTuVwXyZ'
+  // Folder ID untuk surat izin
+  static const String permissionFolderId = '1qUgxFFyRJ-Y-rw1PHNQCNfBktFaoWKW0'; // Ganti dengan Folder ID untuk surat izin
+  // Folder ID untuk foto absensi
+  static const String attendanceFolderId = '1z1N2gOHbDs7Huaj4N5Nj3Ht5VfwKCqYw'; // Ganti dengan Folder ID untuk foto absensi
 
   static Future<String?> uploadToGoogleDrive(
     File file, {
     required String assetCredentialsPath,
+    String? targetFolderId, // Parameter opsional untuk menentukan folder tujuan
   }) async {
     try {
       // Gunakan rootBundle untuk memuat kredensial tanpa BuildContext
@@ -29,7 +32,8 @@ class DriveHelper {
 
       final driveFile = drive.File();
       driveFile.name = path.basename(tempPath);
-      driveFile.parents = [folderId];
+      // Gunakan targetFolderId jika diberikan, jika tidak gunakan default (misalnya permissionFolderId)
+      driveFile.parents = [targetFolderId ?? permissionFolderId];
 
       final stream = http.ByteStream(Stream.castFrom(File(tempPath).openRead()));
       final media = drive.Media(stream, await File(tempPath).length());

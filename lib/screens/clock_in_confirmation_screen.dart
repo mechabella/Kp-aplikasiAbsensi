@@ -39,11 +39,13 @@ class _ClockInConfirmationScreenState extends State<ClockInConfirmationScreen> {
     });
 
     try {
-      // Unggah foto ke Google Drive
+      // Unggah foto ke Google Drive (folder untuk foto absensi)
       final file = File(widget.imageFile.path);
       final photoUrl = await DriveHelper.uploadToGoogleDrive(
         file,
         assetCredentialsPath: 'assets/absensi-458109-453307b07c38.json',
+        targetFolderId:
+            DriveHelper.attendanceFolderId, // Gunakan folder untuk foto absensi
       );
       if (photoUrl == null) {
         throw Exception('Gagal mengunggah foto ke Google Drive');

@@ -80,14 +80,15 @@ class _PermissionRequestScreenState extends State<PermissionRequestScreen> {
     });
 
     try {
-      String? fileUrl = '';
+      String fileUrl = '';
       if (_file != null) {
-        // Unggah file ke Google Drive
+        // Unggah file ke Google Drive (folder untuk surat izin)
         fileUrl = await DriveHelper.uploadToGoogleDrive(
           _file!,
-          assetCredentialsPath: 'assets/absensiapp-123456789.json',
-        );
-        if (fileUrl == null) {
+          assetCredentialsPath: 'assets/absensi-458109-453307b07c38.json',
+          targetFolderId: DriveHelper.permissionFolderId, // Gunakan folder untuk surat izin
+        ) ?? '';
+        if (fileUrl.isEmpty) {
           throw Exception('Gagal mengunggah file ke Google Drive');
         }
       }
