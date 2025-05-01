@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:location/location.dart' as loc;
@@ -24,6 +25,7 @@ class _ClockInScreenState extends State<ClockInScreen> {
   bool _isLocationLoading = true;
   String _workStatus = 'Work From Office';
   DateTime? _capturedTime;
+  double? _imageAspectRatio;
 
   @override
   void initState() {
@@ -127,129 +129,126 @@ class _ClockInScreenState extends State<ClockInScreen> {
 
   Future<XFile> _processImage(XFile image) async {
     try {
-      final bytes = await image.readAsBytes();
-      img.Image? originalImage = img.decodeImage(bytes);
+      print('Memulai pemrosesan gambar...');
 
+      // Langkah 1: Dekode gambar menggunakan package image
+      final bytes = await image.readAsBytes();
+      print('Berhasil membaca bytes gambar: ${bytes.length} bytes');
+
+      img.Image? originalImage = img.decodeImage(bytes);
       if (originalImage == null) {
         throw Exception('Gagal mendekode gambar');
       }
+      print('Berhasil mendekode gambar: ${originalImage.width}x${originalImage.height}');
 
-      // Flip the image horizontally for selfie camera
-      img.Image processedImage = img.flipHorizontal(originalImage);
+      // Langkah 2: Balik gambar secara horizontal
+      img.Image flippedImage = img.flipHorizontal(originalImage);
+      print('Berhasil membalik gambar secara horizontal');
 
-      // Get current time or use captured time
+      // Langkah 3: Konversi gambar ke format ui.Image untuk digunakan dengan Canvas
+      final uiBytes = img.encodePng(flippedImage);
+      final ui.Image uiImage = await decodeImageFromList(uiBytes);
+      print('Berhasil mengkonversi ke ui.Image');
+
+      // Langkah 4: Siapkan teks yang akan ditambahkan
       final timeString = _capturedTime != null
           ? DateFormat('dd MMM yyyy - HH:mm:ss').format(_capturedTime!)
           : DateFormat('dd MMM yyyy - HH:mm:ss').format(DateTime.now());
-
-      // Get the current address
       final locationString = _address ?? 'Lokasi: Tidak tersedia';
+      final statusText = "Status: $_workStatus";
+      print('Waktu: $timeString, Alamat: $locationString, Status: $statusText');
 
-      // Calculate text sizes for proper background rectangles
-      const int fontSize = 16;
-      final int timeWidth = timeString.length * fontSize;
-      final int addressWidth = locationString.length * (fontSize - 4);
-      
-      // Draw semi-transparent background for time
-      img.fillRect(
-        processedImage,
-        x1: 10,
-        y1: 10,
-        x2: timeWidth < 250 ? 250 : timeWidth + 30,
-        y2: 40,
-        color: img.ColorRgba8(0, 0, 0, 180), // Black with 70% opacity
-      );
-      
-      // Draw time text
-      img.drawString(
-        processedImage,
-        timeString,
-        font: img.arial24, // Menggunakan font yang valid
-        x: 20,
-        y: 15,
-        color: img.ColorRgb8(255, 255, 255), // White
-      );
-      
-      // Draw semi-transparent background for address
-      // Split address into multiple lines if too long
-      final List<String> addressLines = [];
-      if (locationString.length > 50) {
-        // Simple text wrapping
-        int start = 0;
-        while (start < locationString.length) {
-          int end = start + 50;
-          if (end > locationString.length) end = locationString.length;
-          // Try to break at a comma or space
-          if (end < locationString.length) {
-            int breakPoint = locationString.lastIndexOf(',', end);
-            if (breakPoint > start && breakPoint < end) {
-              end = breakPoint + 1;
-            } else {
-              breakPoint = locationString.lastIndexOf(' ', end);
-              if (breakPoint > start) end = breakPoint;
-            }
-          }
-          addressLines.add(locationString.substring(start, end));
-          start = end;
-        }
-      } else {
-        addressLines.add(locationString);
-      }
-      
-      final int addressHeight = addressLines.length * 25 + 10;
-      
-      img.fillRect(
-        processedImage,
-        x1: 10,
-        y1: processedImage.height - addressHeight - 10,
-        x2: addressWidth < 250 ? 350 : addressWidth + 30,
-        y2: processedImage.height - 10,
-        color: img.ColorRgba8(0, 0, 0, 180), // Black with 70% opacity
-      );
-      
-      // Draw address text (possibly multi-line)
-      for (int i = 0; i < addressLines.length; i++) {
-        img.drawString(
-          processedImage,
-          addressLines[i],
-          font: img.arial14, // Menggunakan font yang valid
-          x: 20,
-          y: processedImage.height - addressHeight - 5 + (i * 25),
-          color: img.ColorRgb8(255, 255, 255), // White
+      // Langkah 5: Gunakan Canvas untuk menggambar gambar dan teks
+      final recorder = ui.PictureRecorder();
+      final canvas = ui.Canvas(recorder);
+
+      // Gambar gambar asli
+      canvas.drawImage(uiImage, Offset.zero, ui.Paint());
+
+      // Siapkan painter untuk teks
+      TextPainter textPainter(String text, double fontSize, Color color, {int? maxLines}) {
+        final painter = TextPainter(
+          text: TextSpan(
+            text: text,
+            style: TextStyle(
+              fontSize: fontSize,
+              color: color,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          textDirection: ui.TextDirection.ltr, // Menggunakan ui.TextDirection
+          maxLines: maxLines,
         );
+        painter.layout(maxWidth: uiImage.width.toDouble() - 40); // Beri padding 20 di kedua sisi
+        return painter;
       }
-      
-      // Also add work status to the image
-      final String statusText = "Status: $_workStatus";
-      img.fillRect(
-        processedImage,
-        x1: 10,
-        y1: 50,
-        x2: 250,
-        y2: 80, 
-        color: img.ColorRgba8(0, 0, 0, 180), // Black with 70% opacity
-      );
-      
-      img.drawString(
-        processedImage,
-        statusText,
-        font: img.arial14, // Menggunakan font yang valid
-        x: 20,
-        y: 55,
-        color: img.ColorRgb8(255, 255, 255), // White
-      );
 
-      // Save the processed image to a temporary file
+      // Gambar latar belakang semi-transparan dan teks waktu
+      final timePainter = textPainter(timeString, 24, Colors.white);
+      final timeBackground = ui.Paint()..color = Colors.black.withOpacity(0.7);
+      canvas.drawRect(
+        ui.Rect.fromLTWH(
+          10,
+          10,
+          timePainter.width + 20,
+          timePainter.height + 10,
+        ),
+        timeBackground,
+      );
+      timePainter.paint(canvas, const Offset(20, 15));
+      print('Berhasil menambahkan teks waktu');
+
+      // Gambar latar belakang dan teks status kerja
+      final statusPainter = textPainter(statusText, 16, Colors.white);
+      final statusBackground = ui.Paint()..color = Colors.black.withOpacity(0.7);
+      canvas.drawRect(
+        ui.Rect.fromLTWH(
+          10,
+          60,
+          statusPainter.width + 20,
+          statusPainter.height + 10,
+        ),
+        statusBackground,
+      );
+      statusPainter.paint(canvas, const Offset(20, 65));
+      print('Berhasil menambahkan teks status kerja');
+
+      // Gambar latar belakang dan teks alamat (dengan text wrapping)
+      final addressPainter = textPainter(locationString, 16, Colors.white, maxLines: 2);
+      final addressBackground = ui.Paint()..color = Colors.black.withOpacity(0.7);
+      canvas.drawRect(
+        ui.Rect.fromLTWH(
+          10,
+          uiImage.height.toDouble() - addressPainter.height - 20,
+          addressPainter.width + 20,
+          addressPainter.height + 10,
+        ),
+        addressBackground,
+      );
+      addressPainter.paint(canvas, Offset(20, uiImage.height.toDouble() - addressPainter.height - 15));
+      print('Berhasil menambahkan teks alamat');
+
+      // Langkah 6: Simpan hasil Canvas ke file
+      final picture = recorder.endRecording();
+      final finalImage = await picture.toImage(uiImage.width, uiImage.height);
+      final byteData = await finalImage.toByteData(format: ui.ImageByteFormat.png);
+      final buffer = byteData!.buffer.asUint8List();
+
       final tempDir = await getTemporaryDirectory();
       final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final tempPath = '${tempDir.path}/processed_$timestamp.jpg';
+      final tempPath = '${tempDir.path}/processed_$timestamp.png';
       
-      File(tempPath).writeAsBytesSync(img.encodeJpg(processedImage, quality: 90));
-      
+      File(tempPath).writeAsBytesSync(buffer);
+      print('Berhasil menyimpan gambar ke: $tempPath');
+
+      // Simpan aspek rasio untuk tampilan
+      setState(() {
+        _imageAspectRatio = uiImage.width / uiImage.height;
+      });
+
       return XFile(tempPath);
     } catch (e) {
       print('Error processing image: $e');
-      // If image processing fails, return the original image
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Gagal memproses gambar: $e')),
       );
@@ -289,6 +288,7 @@ class _ClockInScreenState extends State<ClockInScreen> {
         _imageFile = processedImage;
       });
     } catch (e) {
+      Navigator.of(context).pop(); // Pastikan loading indicator ditutup jika ada error
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Gagal mengambil foto: $e')),
       );
@@ -342,12 +342,14 @@ class _ClockInScreenState extends State<ClockInScreen> {
                         child: Stack(
                           children: [
                             Container(
-                              height: 400,
                               width: double.infinity,
+                              height: _imageAspectRatio != null
+                                  ? (MediaQuery.of(context).size.width - 32) / _imageAspectRatio!
+                                  : 400, // 32 adalah padding horizontal total
                               child: _imageFile != null
                                   ? Image.file(
                                       File(_imageFile!.path),
-                                      fit: BoxFit.cover,
+                                      fit: BoxFit.contain,
                                     )
                                   : (_cameraController != null && _cameraController!.value.isInitialized)
                                       ? CameraPreview(_cameraController!)
@@ -364,7 +366,8 @@ class _ClockInScreenState extends State<ClockInScreen> {
                                       ? () {
                                           setState(() {
                                             _imageFile = null;
-                                            _capturedTime = null; // Reset time when retaking
+                                            _capturedTime = null;
+                                            _imageAspectRatio = null;
                                           });
                                         }
                                       : _takePicture,
