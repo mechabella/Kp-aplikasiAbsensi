@@ -92,11 +92,8 @@ class _PermissionRequestScreenState extends State<PermissionRequestScreen> {
           throw Exception('Gagal mengunggah file ke Google Drive');
         }
       }
-
-      // Hitung jumlah hari
       final duration = _toDate!.difference(_fromDate!).inDays + 1;
 
-      // Ambil data pengguna
       final authService = Provider.of<AuthService>(context, listen: false);
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) {
@@ -107,7 +104,6 @@ class _PermissionRequestScreenState extends State<PermissionRequestScreen> {
         throw Exception('Gagal memuat data pengguna');
       }
 
-      // Buat objek Permission
       final permission = Permission(
         id: '${user.uid}_${DateTime.now().toIso8601String()}',
         uid: user.uid,
@@ -122,7 +118,6 @@ class _PermissionRequestScreenState extends State<PermissionRequestScreen> {
         submissionDate: DateTime.now(),
       );
 
-      // Simpan ke Firestore
       final result = await authService.submitPermission(permission);
       if (result['success'] == true) {
         ScaffoldMessenger.of(context).showSnackBar(

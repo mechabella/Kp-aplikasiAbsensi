@@ -202,7 +202,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 color: Colors.black87,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 5),
             StreamBuilder<DateTime>(
               stream: Stream.periodic(const Duration(seconds: 1), (_) => DateTime.now()),
               builder: (context, snapshot) {
@@ -233,12 +233,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 color: Colors.grey[600],
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
             Divider(
               color: Colors.grey[300],
               thickness: 1,
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
             const Text(
               'Office Hours',
               style: TextStyle(
