@@ -7,6 +7,7 @@ import '../services/auth_service.dart';
 import '../models/attendance.dart';
 import 'manage_users_screen.dart';
 import 'clock_in_screen.dart';
+import 'clock_out_screen.dart';
 import 'permission_request_screen.dart';
 import 'permission_history_screen.dart';
 import 'login_screen.dart';
@@ -67,17 +68,26 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     _buildHeader(context, userData, authService, role),
                     Expanded(
-                      child: SingleChildScrollView(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const SizedBox(height: 16),
-                              _buildAttendanceCard(context, role),
-                              const SizedBox(height: 20),
-                              _buildAttendanceHistory(authService, snapshot.data!.uid),
-                            ],
+                      child: RefreshIndicator(
+                        onRefresh: () async {
+                          setState(() {});
+                        },
+                        child: SingleChildScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          child: Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 16.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(height: 16),
+                                _buildAttendanceCard(
+                                    context, role, snapshot.data!.uid),
+                                const SizedBox(height: 20),
+                                _buildAttendanceHistory(
+                                    authService, snapshot.data!.uid),
+                              ],
+                            ),
                           ),
                         ),
                       ),
@@ -92,7 +102,8 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildHeader(BuildContext context, Map<String, dynamic> userData, AuthService authService, String role) {
+  Widget _buildHeader(BuildContext context, Map<String, dynamic> userData,
+      AuthService authService, String role) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       color: const Color(0xFF001F54),
@@ -100,9 +111,11 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           CircleAvatar(
             radius: 18,
-            backgroundImage: userData['fotoUrl'] != null && userData['fotoUrl'].isNotEmpty
-                ? NetworkImage(userData['fotoUrl'])
-                : const AssetImage('assets/default_profile.png') as ImageProvider,
+            backgroundImage:
+                userData['fotoUrl'] != null && userData['fotoUrl'].isNotEmpty
+                    ? NetworkImage(userData['fotoUrl'])
+                    : const AssetImage('assets/default_profile.png')
+                        as ImageProvider,
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -118,7 +131,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 Text(
-                  userData['id'] != null ? "${userData['id']} - ${userData['jabatan'] ?? ''}" : "123456789 - Junior UX Designer",
+                  userData['id'] != null
+                      ? "${userData['id']} - ${userData['jabatan'] ?? ''}"
+                      : "123456789 - Junior UX Designer",
                   style: const TextStyle(
                     fontSize: 12,
                     color: Colors.white70,
@@ -134,9 +149,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const ManageUsersScreen()),
+                    MaterialPageRoute(
+                        builder: (context) => const ManageUsersScreen()),
                   );
                 },
+                tooltip: 'Kelola Pengguna',
               ),
             ),
           if (role == 'karyawan') ...[
@@ -146,7 +163,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const PermissionRequestScreen()),
+                    MaterialPageRoute(
+                        builder: (context) => const PermissionRequestScreen()),
                   );
                 },
                 tooltip: 'Ajukan Izin',
@@ -158,7 +176,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const PermissionHistoryScreen()),
+                    MaterialPageRoute(
+                        builder: (context) => const PermissionHistoryScreen()),
                   );
                 },
                 tooltip: 'Riwayat Pengajuan Izin',
@@ -175,13 +194,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 (route) => false,
               );
             },
+            tooltip: 'Logout',
           ),
         ],
       ),
     );
   }
 
-  Widget _buildAttendanceCard(BuildContext context, String role) {
+  Widget _buildAttendanceCard(
+      BuildContext context, String role, String uid) {
     return Card(
       elevation: 2,
       margin: EdgeInsets.zero,
@@ -204,7 +225,8 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(height: 5),
             StreamBuilder<DateTime>(
-              stream: Stream.periodic(const Duration(seconds: 1), (_) => DateTime.now()),
+              stream: Stream.periodic(
+                  const Duration(seconds: 1), (_) => DateTime.now()),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
                   return const Text(
@@ -256,74 +278,209 @@ class _HomeScreenState extends State<HomeScreen> {
                 color: Colors.black,
               ),
             ),
-            const SizedBox(height: 24),
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: role == 'karyawan'
-                        ? () async {
-                            await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const ClockInScreen(),
-                              ),
-                            );
-                            setState(() {}); // Refresh riwayat absensi
-                          }
-                        : null,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF001F54),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 20),
+            const SizedBox(height: 16),
+            FutureBuilder<Map<String, bool>>(
+              future: _checkAttendanceStatus(uid),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const CircularProgressIndicator();
+                }
+                final hasClockedIn = snapshot.data?['hasClockedIn'] ?? false;
+                final hasClockedOut = snapshot.data?['hasClockedOut'] ?? false;
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      hasClockedIn
+                          ? Icons.check_circle
+                          : Icons.error_outline,
+                      color: hasClockedIn ? Colors.green : Colors.grey,
+                      size: 20,
                     ),
-                    child: const Text(
-                      'Clock In',
+                    const SizedBox(width: 8),
+                    Text(
+                      hasClockedIn ? 'Clocked In' : 'Not Clocked In',
                       style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16,
+                        fontSize: 14,
+                        color: hasClockedIn ? Colors.green : Colors.grey,
                       ),
                     ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Builder(
-                    builder: (context) => ElevatedButton(
-                      onPressed: role == 'karyawan'
-                          ? () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Clock Out (coming soon)')),
-                              );
-                            }
-                          : null,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF001F54),
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 20),
+                    const SizedBox(width: 16),
+                    Icon(
+                      hasClockedOut
+                          ? Icons.check_circle
+                          : Icons.error_outline,
+                      color: hasClockedOut ? Colors.green : Colors.grey,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      hasClockedOut ? 'Clocked Out' : 'Not Clocked Out',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: hasClockedOut ? Colors.green : Colors.grey,
                       ),
-                      child: const Text(
-                        'Clock Out',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 16,
+                    ),
+                  ],
+                );
+              },
+            ),
+            const SizedBox(height: 24),
+            FutureBuilder<Map<String, bool>>(
+              future: _checkAttendanceStatus(uid),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const CircularProgressIndicator();
+                }
+                final hasClockedIn = snapshot.data?['hasClockedIn'] ?? false;
+                final hasClockedOut = snapshot.data?['hasClockedOut'] ?? false;
+                return Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: role == 'karyawan'
+                            ? () async {
+                                if (hasClockedIn) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                          'Anda sudah melakukan Clock In hari ini'),
+                                    ),
+                                  );
+                                  return;
+                                }
+                                await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const ClockInScreen(),
+                                  ),
+                                );
+                                setState(() {}); // Refresh riwayat absensi
+                              }
+                            : () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                        'Hanya karyawan yang dapat melakukan Clock In'),
+                                  ),
+                                );
+                              },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: hasClockedIn
+                              ? Colors.green
+                              : const Color(0xFF001F54),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 20),
+                        ),
+                        child: const Text(
+                          'Clock In',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ),
-              ],
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Builder(
+                        builder: (context) => ElevatedButton(
+                          onPressed: role == 'karyawan'
+                              ? () async {
+                                  if (!hasClockedIn) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                            'Anda belum melakukan Clock In hari ini'),
+                                      ),
+                                    );
+                                    return;
+                                  }
+                                  if (hasClockedOut) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                            'Anda sudah melakukan Clock Out hari ini'),
+                                      ),
+                                    );
+                                    return;
+                                  }
+                                  await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const ClockOutScreen(),
+                                    ),
+                                  );
+                                  setState(() {}); // Refresh riwayat absensi
+                                }
+                              : () {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                          'Hanya karyawan yang dapat melakukan Clock Out'),
+                                    ),
+                                  );
+                                },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: hasClockedOut
+                                ? Colors.green
+                                : const Color(0xFF001F54),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 20),
+                          ),
+                          child: const Text(
+                            'Clock Out',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
           ],
         ),
       ),
     );
+  }
+
+  Future<Map<String, bool>> _checkAttendanceStatus(String uid) async {
+    final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    final startOfDay = DateTime.parse('$today 00:00:00');
+    final endOfDay = DateTime.parse('$today 23:59:59');
+
+    final authService = Provider.of<AuthService>(context, listen: false);
+    final attendanceList = await authService.getUserAttendance(uid);
+
+    bool hasClockedIn = false;
+    bool hasClockedOut = false;
+
+    for (var attendance in attendanceList) {
+      if (attendance.timestamp.isAfter(startOfDay) &&
+          attendance.timestamp.isBefore(endOfDay)) {
+        if (attendance.type == 'clock_in') {
+          hasClockedIn = true;
+        } else if (attendance.type == 'clock_out') {
+          hasClockedOut = true;
+        }
+      }
+    }
+
+    return {
+      'hasClockedIn': hasClockedIn,
+      'hasClockedOut': hasClockedOut,
+    };
   }
 
   Widget _buildAttendanceHistory(AuthService authService, String uid) {
@@ -338,20 +495,36 @@ class _HomeScreenState extends State<HomeScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Icon(
-                Icons.history,
-                size: 18,
-                color: Colors.black54,
+              Row(
+                children: [
+                  const Icon(
+                    Icons.history,
+                    size: 18,
+                    color: Colors.black54,
+                  ),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Attendance History',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 8),
-              const Text(
-                'Attendance History',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87,
+              IconButton(
+                icon: const Icon(
+                  Icons.refresh,
+                  size: 18,
+                  color: Colors.black54,
                 ),
+                onPressed: () {
+                  setState(() {});
+                },
+                tooltip: 'Refresh Riwayat',
               ),
             ],
           ),
@@ -362,7 +535,9 @@ class _HomeScreenState extends State<HomeScreen> {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(child: CircularProgressIndicator());
               }
-              if (snapshot.hasError || !snapshot.hasData || snapshot.data!.isEmpty) {
+              if (snapshot.hasError ||
+                  !snapshot.hasData ||
+                  snapshot.data!.isEmpty) {
                 return const Center(child: Text('Belum ada data absensi'));
               }
 
@@ -373,26 +548,48 @@ class _HomeScreenState extends State<HomeScreen> {
                 itemCount: attendanceData.length,
                 itemBuilder: (context, index) {
                   final attendance = attendanceData[index];
-                  final isLate = attendance.timestamp.hour >= 8 && attendance.timestamp.minute > 0;
+                  final isLate = attendance.type == 'clock_in' &&
+                      attendance.timestamp.hour >= 8 &&
+                      attendance.timestamp.minute > 0;
+                  final isEarly = attendance.type == 'clock_out' &&
+                      (attendance.timestamp.hour < 17 ||
+                          (attendance.timestamp.hour == 17 &&
+                              attendance.timestamp.minute == 0));
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 12),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          DateFormat('EEE, dd MMMM yyyy').format(attendance.timestamp),
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.black87,
-                          ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              DateFormat('EEE, dd MMMM yyyy')
+                                  .format(attendance.timestamp),
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.black87,
+                              ),
+                            ),
+                            Text(
+                              attendance.type == 'clock_in'
+                                  ? 'Clock In'
+                                  : 'Clock Out',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ],
                         ),
                         Text(
                           DateFormat('HH:mm').format(attendance.timestamp),
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
-                            color: isLate ? Colors.red : Colors.black87,
+                            color:
+                                isLate || isEarly ? Colors.red : Colors.black87,
                           ),
                         ),
                       ],

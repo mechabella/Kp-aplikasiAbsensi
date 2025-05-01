@@ -7,16 +7,16 @@ import 'package:intl/intl.dart';
 import 'package:image/image.dart' as img;
 import 'package:path_provider/path_provider.dart';
 import 'package:geocoding/geocoding.dart';
-import 'clock_in_confirmation_screen.dart';
+import 'clock_out_confirmation_screen.dart';
 
-class ClockInScreen extends StatefulWidget {
-  const ClockInScreen({super.key});
+class ClockOutScreen extends StatefulWidget {
+  const ClockOutScreen({super.key});
 
   @override
-  _ClockInScreenState createState() => _ClockInScreenState();
+  _ClockOutScreenState createState() => _ClockOutScreenState();
 }
 
-class _ClockInScreenState extends State<ClockInScreen> {
+class _ClockOutScreenState extends State<ClockOutScreen> {
   CameraController? _cameraController;
   List<CameraDescription>? _cameras;
   XFile? _imageFile;
@@ -90,16 +90,16 @@ class _ClockInScreenState extends State<ClockInScreen> {
       }
 
       _locationData = await location.getLocation();
-
-      if (_locationData != null &&
-          _locationData!.latitude != null &&
+      
+      if (_locationData != null && 
+          _locationData!.latitude != null && 
           _locationData!.longitude != null) {
         try {
           List<Placemark> placemarks = await placemarkFromCoordinates(
             _locationData!.latitude!,
             _locationData!.longitude!,
           );
-
+          
           if (placemarks.isNotEmpty) {
             Placemark placemark = placemarks[0];
             _address = [
@@ -139,8 +139,7 @@ class _ClockInScreenState extends State<ClockInScreen> {
       if (originalImage == null) {
         throw Exception('Gagal mendekode gambar');
       }
-      print(
-          'Berhasil mendekode gambar: ${originalImage.width}x${originalImage.height}');
+      print('Berhasil mendekode gambar: ${originalImage.width}x${originalImage.height}');
 
       // Langkah 2: Balik gambar secara horizontal
       img.Image flippedImage = img.flipHorizontal(originalImage);
@@ -167,8 +166,7 @@ class _ClockInScreenState extends State<ClockInScreen> {
       canvas.drawImage(uiImage, Offset.zero, ui.Paint());
 
       // Siapkan painter untuk teks
-      TextPainter textPainter(String text, double fontSize, Color color,
-          {int? maxLines}) {
+      TextPainter textPainter(String text, double fontSize, Color color, {int? maxLines}) {
         final painter = TextPainter(
           text: TextSpan(
             text: text,
@@ -181,9 +179,7 @@ class _ClockInScreenState extends State<ClockInScreen> {
           textDirection: ui.TextDirection.ltr,
           maxLines: maxLines,
         );
-        painter.layout(
-            maxWidth:
-                uiImage.width.toDouble() - 40); // Beri padding 20 di kedua sisi
+        painter.layout(maxWidth: uiImage.width.toDouble() - 40);
         return painter;
       }
 
@@ -204,8 +200,7 @@ class _ClockInScreenState extends State<ClockInScreen> {
 
       // Gambar latar belakang dan teks status kerja
       final statusPainter = textPainter(statusText, 16, Colors.white);
-      final statusBackground = ui.Paint()
-        ..color = Colors.black.withOpacity(0.7);
+      final statusBackground = ui.Paint()..color = Colors.black.withOpacity(0.7);
       canvas.drawRect(
         ui.Rect.fromLTWH(
           10,
@@ -219,10 +214,8 @@ class _ClockInScreenState extends State<ClockInScreen> {
       print('Berhasil menambahkan teks status kerja');
 
       // Gambar latar belakang dan teks alamat (dengan text wrapping)
-      final addressPainter =
-          textPainter(locationString, 16, Colors.white, maxLines: 2);
-      final addressBackground = ui.Paint()
-        ..color = Colors.black.withOpacity(0.7);
+      final addressPainter = textPainter(locationString, 16, Colors.white, maxLines: 2);
+      final addressBackground = ui.Paint()..color = Colors.black.withOpacity(0.7);
       canvas.drawRect(
         ui.Rect.fromLTWH(
           10,
@@ -232,15 +225,13 @@ class _ClockInScreenState extends State<ClockInScreen> {
         ),
         addressBackground,
       );
-      addressPainter.paint(canvas,
-          Offset(20, uiImage.height.toDouble() - addressPainter.height - 15));
+      addressPainter.paint(canvas, Offset(20, uiImage.height.toDouble() - addressPainter.height - 15));
       print('Berhasil menambahkan teks alamat');
 
       // Langkah 6: Simpan hasil Canvas ke file
       final picture = recorder.endRecording();
       final finalImage = await picture.toImage(uiImage.width, uiImage.height);
-      final byteData =
-          await finalImage.toByteData(format: ui.ImageByteFormat.png);
+      final byteData = await finalImage.toByteData(format: ui.ImageByteFormat.png);
       if (byteData == null) {
         throw Exception('Gagal mengkonversi gambar ke byte data');
       }
@@ -249,15 +240,14 @@ class _ClockInScreenState extends State<ClockInScreen> {
       final tempDir = await getTemporaryDirectory();
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       final tempPath = '${tempDir.path}/processed_$timestamp.png';
-
+      
       // Simpan file
       final processedFile = File(tempPath);
       await processedFile.writeAsBytes(buffer);
       print('Berhasil menyimpan gambar ke: $tempPath');
 
       // Verifikasi bahwa file dapat dibaca kembali sebagai gambar
-      final verificationImage =
-          img.decodeImage(await processedFile.readAsBytes());
+      final verificationImage = img.decodeImage(await processedFile.readAsBytes());
       if (verificationImage == null) {
         throw Exception('Gambar yang diproses tidak valid');
       }
@@ -287,12 +277,10 @@ class _ClockInScreenState extends State<ClockInScreen> {
     }
 
     try {
-      // Save the time when the photo is taken
       _capturedTime = DateTime.now();
-
+      
       final image = await _cameraController!.takePicture();
-
-      // Show loading indicator
+      
       showDialog(
         context: context,
         barrierDismissible: false,
@@ -300,18 +288,16 @@ class _ClockInScreenState extends State<ClockInScreen> {
           child: CircularProgressIndicator(),
         ),
       );
-
+      
       final processedImage = await _processImage(image);
-
-      // Hide loading indicator
+      
       Navigator.of(context).pop();
-
+      
       setState(() {
         _imageFile = processedImage;
       });
     } catch (e) {
-      Navigator.of(context)
-          .pop(); // Pastikan loading indicator ditutup jika ada error
+      Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Gagal mengambil foto: $e')),
       );
@@ -358,8 +344,7 @@ class _ClockInScreenState extends State<ClockInScreen> {
                       width: double.infinity,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),
-                        border:
-                            Border.all(color: Colors.blue.shade100, width: 2),
+                        border: Border.all(color: Colors.blue.shade100, width: 2),
                       ),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(10),
@@ -368,20 +353,16 @@ class _ClockInScreenState extends State<ClockInScreen> {
                             Container(
                               width: double.infinity,
                               height: _imageAspectRatio != null
-                                  ? (MediaQuery.of(context).size.width - 32) /
-                                      _imageAspectRatio!
-                                  : 400, // 32 adalah padding horizontal total
+                                  ? (MediaQuery.of(context).size.width - 32) / _imageAspectRatio!
+                                  : 400,
                               child: _imageFile != null
                                   ? Image.file(
                                       File(_imageFile!.path),
                                       fit: BoxFit.contain,
                                     )
-                                  : (_cameraController != null &&
-                                          _cameraController!
-                                              .value.isInitialized)
+                                  : (_cameraController != null && _cameraController!.value.isInitialized)
                                       ? CameraPreview(_cameraController!)
-                                      : const Center(
-                                          child: Text('Kamera tidak tersedia')),
+                                      : const Center(child: Text('Kamera tidak tersedia')),
                             ),
                             Positioned(
                               left: 0,
@@ -400,15 +381,11 @@ class _ClockInScreenState extends State<ClockInScreen> {
                                         }
                                       : _takePicture,
                                   icon: Icon(
-                                    _imageFile != null
-                                        ? Icons.refresh
-                                        : Icons.camera_alt,
+                                    _imageFile != null ? Icons.refresh : Icons.camera_alt,
                                     color: Colors.white,
                                   ),
                                   label: Text(
-                                    _imageFile != null
-                                        ? 'Retake Photo'
-                                        : 'Take Photo',
+                                    _imageFile != null ? 'Retake Photo' : 'Take Photo',
                                     style: const TextStyle(color: Colors.white),
                                   ),
                                   style: ElevatedButton.styleFrom(
@@ -416,65 +393,47 @@ class _ClockInScreenState extends State<ClockInScreen> {
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(30),
                                     ),
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 12),
-                                    minimumSize:
-                                        const Size(double.infinity, 48),
+                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                    minimumSize: const Size(double.infinity, 48),
                                   ),
                                 ),
                               ),
                             ),
-                            if (_cameraController != null &&
-                                _cameraController!.value.isInitialized &&
-                                _imageFile == null)
+                            if (_cameraController != null && _cameraController!.value.isInitialized && _imageFile == null)
                               Positioned(
                                 left: 16,
                                 top: 16,
                                 child: StreamBuilder(
-                                  stream: Stream.periodic(
-                                      const Duration(seconds: 1)),
+                                  stream: Stream.periodic(const Duration(seconds: 1)),
                                   builder: (context, snapshot) {
                                     final currentTime = DateTime.now();
                                     return Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Container(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 8, vertical: 4),
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                           decoration: BoxDecoration(
-                                            color:
-                                                Colors.black.withOpacity(0.5),
-                                            borderRadius:
-                                                BorderRadius.circular(4),
+                                            color: Colors.black.withOpacity(0.5),
+                                            borderRadius: BorderRadius.circular(4),
                                           ),
                                           child: Text(
-                                            DateFormat('HH:mm:ss')
-                                                .format(currentTime),
-                                            style: const TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 14),
+                                            DateFormat('HH:mm:ss').format(currentTime),
+                                            style: const TextStyle(color: Colors.white, fontSize: 14),
                                           ),
                                         ),
                                         const SizedBox(height: 8),
                                         Container(
                                           width: 250,
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 8, vertical: 4),
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                           decoration: BoxDecoration(
-                                            color:
-                                                Colors.black.withOpacity(0.5),
-                                            borderRadius:
-                                                BorderRadius.circular(4),
+                                            color: Colors.black.withOpacity(0.5),
+                                            borderRadius: BorderRadius.circular(4),
                                           ),
                                           child: Text(
                                             _isLocationLoading
                                                 ? 'Mengambil alamat...'
-                                                : _address ??
-                                                    'Alamat tidak tersedia',
-                                            style: const TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 12),
+                                                : _address ?? 'Alamat tidak tersedia',
+                                            style: const TextStyle(color: Colors.white, fontSize: 12),
                                             maxLines: 2,
                                             overflow: TextOverflow.ellipsis,
                                           ),
@@ -505,8 +464,7 @@ class _ClockInScreenState extends State<ClockInScreen> {
                           decoration: InputDecoration(
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide:
-                                  BorderSide(color: Colors.grey.shade300),
+                              borderSide: BorderSide(color: Colors.grey.shade300),
                             ),
                           ),
                           items: const [
@@ -540,16 +498,14 @@ class _ClockInScreenState extends State<ClockInScreen> {
                         ),
                         const SizedBox(height: 8),
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 16),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
                           decoration: BoxDecoration(
                             border: Border.all(color: Colors.grey.shade300),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.location_on_outlined,
-                                  color: Colors.grey),
+                              const Icon(Icons.location_on_outlined, color: Colors.grey),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Text(
@@ -575,8 +531,7 @@ class _ClockInScreenState extends State<ClockInScreen> {
               onPressed: () {
                 if (_imageFile == null) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('Harap ambil foto terlebih dahulu')),
+                    const SnackBar(content: Text('Harap ambil foto terlebih dahulu')),
                   );
                   return;
                 }
@@ -591,7 +546,7 @@ class _ClockInScreenState extends State<ClockInScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => ClockInConfirmationScreen(
+                    builder: (context) => ClockOutConfirmationScreen(
                       imageFile: _imageFile!,
                       latitude: _locationData!.latitude!,
                       longitude: _locationData!.longitude!,
@@ -608,7 +563,7 @@ class _ClockInScreenState extends State<ClockInScreen> {
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              child: const Text('Clock In', style: TextStyle(fontSize: 16)),
+              child: const Text('Clock Out', style: TextStyle(fontSize: 16)),
             ),
           ),
         ],
