@@ -13,7 +13,6 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    // Navigate to LoginScreen after 3 seconds
     Timer(const Duration(seconds: 3), () {
       Navigator.pushReplacement(
         context,
@@ -41,26 +40,28 @@ class _SplashScreenState extends State<SplashScreen> {
             clipper: WaveClipper(),
             child: Container(
               width: size.width,
-              height: size.height * 0.45, // Cover ~65% of screen height
+              height: size.height, // Full height, the clipper will handle the curve
               color: const Color(0xFFFFE600), // Bright yellow
             ),
           ),
           
-          // Logo in center
-          Center(
-            child: Padding(
-              padding: EdgeInsets.only(bottom: size.height * 0.1),
+          // Logo positioned higher and larger
+          Positioned(
+            top: size.height * 0.25, // Position logo at 25% from top instead of center
+            left: 0,
+            right: 0,
+            child: Center(
               child: Image.asset(
                 'assets/logo.png',
-                height: 100,
-                width: 100,
+                height: 150, // Increased from 100 to 150
+                width: 150, // Increased from 100 to 150
               ),
             ),
           ),
           
-          // Text at bottom
+          // Text at bottom with exact styling
           Positioned(
-            bottom: 50,
+            bottom: 40,
             left: 0,
             right: 0,
             child: Column(
@@ -69,7 +70,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   'Aplikasi Absensi',
                   style: TextStyle(
                     fontSize: 14,
-                    color: Colors.white,
+                    color: Colors.white70, // Slightly transparent white to match image
                     fontWeight: FontWeight.w400,
                   ),
                 ),
@@ -83,23 +84,6 @@ class _SplashScreenState extends State<SplashScreen> {
                   ),
                 ),
               ],
-            ),
-          ),
-          
-          // Status bar area (to match the image's rounded corners at top)
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              height: 30,
-              decoration: const BoxDecoration(
-                color: Color(0xFFFFE600), // Yellow
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(12),
-                  topRight: Radius.circular(12),
-                ),
-              ),
             ),
           ),
         ],
@@ -118,15 +102,14 @@ class WaveClipper extends CustomClipper<Path> {
     path.moveTo(0, 0);
     
     // Draw straight line down to where the curve starts
-    path.lineTo(0, size.height * 0.7); // Start curve at 70% of height from top
+    path.lineTo(0, size.height * 0.6); // Start curve at 60% of height from top
     
-    // Create a simple curve that matches the image
-    // Using a single quadratic bezier curve for a smooth transition
+    // Create the exact curve that matches the image
     path.quadraticBezierTo(
-      size.width * 0.3,  // Control point x at 30% of width
-      size.height * 1.0, // Control point y slightly below the bottom edge
+      size.width * 0.5,  // Control point x at 50% of width
+      size.height * 0.75, // Control point y at 75% of height
       size.width,        // End point x (right edge)
-      size.height * 0.5  // End point y at 50% of height
+      size.height * 0.4  // End point y at 40% of height
     );
     
     // Draw line up to top-right corner

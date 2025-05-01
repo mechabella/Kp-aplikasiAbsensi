@@ -15,6 +15,8 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLoading = false;
   bool _obscurePassword = true;
   bool _rememberMe = false;
+  String? _emailError;
+  String? _passwordError;
 
   @override
   void dispose() {
@@ -23,7 +25,37 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  void _validateInputs() {
+    setState(() {
+      _emailError = null;
+      _passwordError = null;
+    });
+
+    // Basic validation
+    if (_emailController.text.trim().isEmpty) {
+      setState(() => _emailError = 'Username cannot be empty');
+      return;
+    }
+
+    if (_passwordController.text.trim().isEmpty) {
+      setState(() => _passwordError = 'Password cannot be empty');
+      return;
+    }
+  }
+
   Future<void> _login() async {
+    // Clear previous errors
+    setState(() {
+      _emailError = null;
+      _passwordError = null;
+    });
+
+    // Validate inputs first
+    _validateInputs();
+    if (_emailError != null || _passwordError != null) {
+      return;
+    }
+
     setState(() => _isLoading = true);
     final authService = Provider.of<AuthService>(context, listen: false);
     final result = await authService.signIn(
@@ -33,12 +65,75 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = false);
 
     if (result != null && result.containsKey('error')) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result['error'])),
-      );
+      _handleAuthError(result['error']);
     } else if (result != null && result['user'] != null) {
       Navigator.pushReplacementNamed(context, '/home');
     }
+  }
+
+  void _handleAuthError(String errorMessage) {
+    // Map common error messages to more user-friendly messages
+    String displayMessage = errorMessage;
+    
+    if (errorMessage.contains('user-not-found') || 
+        errorMessage.contains('no user') || 
+        errorMessage.contains('not found')) {
+      setState(() => _emailError = 'Account not found. Please check your username or register.');
+    } 
+    else if (errorMessage.contains('wrong-password') || 
+             errorMessage.contains('incorrect password')) {
+      setState(() => _passwordError = 'Incorrect password. Please try again.');
+    }
+    else if (errorMessage.contains('invalid-email') || 
+             errorMessage.contains('badly formatted')) {
+      setState(() => _emailError = 'Please enter a valid username format.');
+    }
+    else if (errorMessage.contains('too-many-requests') || 
+             errorMessage.contains('blocked')) {
+      _showErrorDialog(
+        'Too Many Attempts',
+        'Your account has been temporarily blocked due to too many failed login attempts. Please try again later or reset your password.'
+      );
+    }
+    else if (errorMessage.contains('network') || 
+             errorMessage.contains('connection')) {
+      _showErrorDialog(
+        'Connection Error',
+        'Unable to connect to our servers. Please check your internet connection and try again.'
+      );
+    }
+    else {
+      // For any other errors, show a dialog with the error message
+      _showErrorDialog('Login Failed', displayMessage);
+    }
+  }
+
+  void _showErrorDialog(String title, String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          title,
+          style: const TextStyle(
+            color: Color(0xFF001F54),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              'OK',
+              style: TextStyle(color: Color(0xFF001F54)),
+            ),
+          ),
+        ],
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15),
+        ),
+      ),
+    );
   }
 
   @override
@@ -167,8 +262,26 @@ class _LoginScreenState extends State<LoginScreen> {
                         borderRadius: BorderRadius.circular(8),
                         borderSide: const BorderSide(color: Color(0xFF001F54)),
                       ),
+                      errorText: _emailError,
+                      errorStyle: const TextStyle(
+                        color: Colors.red,
+                        fontSize: 12,
+                      ),
+                      errorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: const BorderSide(color: Colors.red),
+                      ),
+                      focusedErrorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: const BorderSide(color: Colors.red),
+                      ),
                     ),
                     keyboardType: TextInputType.emailAddress,
+                    onChanged: (_) {
+                      if (_emailError != null) {
+                        setState(() => _emailError = null);
+                      }
+                    },
                   ),
 
                   const SizedBox(height: 15),
@@ -202,6 +315,19 @@ class _LoginScreenState extends State<LoginScreen> {
                         borderRadius: BorderRadius.circular(8),
                         borderSide: const BorderSide(color: Color(0xFF001F54)),
                       ),
+                      errorText: _passwordError,
+                      errorStyle: const TextStyle(
+                        color: Colors.red,
+                        fontSize: 12,
+                      ),
+                      errorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: const BorderSide(color: Colors.red),
+                      ),
+                      focusedErrorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: const BorderSide(color: Colors.red),
+                      ),
                       suffixIcon: IconButton(
                         icon: Icon(
                           _obscurePassword
@@ -216,6 +342,11 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     obscureText: _obscurePassword,
+                    onChanged: (_) {
+                      if (_passwordError != null) {
+                        setState(() => _passwordError = null);
+                      }
+                    },
                   ),
 
                   const SizedBox(height: 15),
