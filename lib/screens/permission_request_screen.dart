@@ -36,7 +36,6 @@ class _PermissionRequestScreenState extends State<PermissionRequestScreen> {
       setState(() {
         if (isFromDate) {
           _fromDate = picked;
-          // Reset _toDate jika lebih awal dari _fromDate
           if (_toDate != null && _toDate!.isBefore(picked)) {
             _toDate = null;
           }
@@ -82,11 +81,10 @@ class _PermissionRequestScreenState extends State<PermissionRequestScreen> {
     try {
       String fileUrl = '';
       if (_file != null) {
-        // Unggah file ke Google Drive (folder untuk surat izin)
         fileUrl = await DriveHelper.uploadToGoogleDrive(
           _file!,
           assetCredentialsPath: 'assets/absensi-458109-453307b07c38.json',
-          targetFolderId: DriveHelper.permissionFolderId, // Gunakan folder untuk surat izin
+          targetFolderId: DriveHelper.permissionFolderId,
         ) ?? '';
         if (fileUrl.isEmpty) {
           throw Exception('Gagal mengunggah file ke Google Drive');
@@ -107,7 +105,7 @@ class _PermissionRequestScreenState extends State<PermissionRequestScreen> {
       final permission = Permission(
         id: '${user.uid}_${DateTime.now().toIso8601String()}',
         uid: user.uid,
-        nama: userData['nama'] ?? '',
+        nama: userData['nama'] ?? 'Unknown',
         fromDate: _fromDate!,
         toDate: _toDate!,
         duration: duration,
@@ -161,7 +159,6 @@ class _PermissionRequestScreenState extends State<PermissionRequestScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Jenis Izin
                     const Text('Jenis Izin', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
                     DropdownButtonFormField<String>(
                       value: _type,
@@ -180,7 +177,6 @@ class _PermissionRequestScreenState extends State<PermissionRequestScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    // Tanggal Mulai
                     const Text('Tanggal Mulai', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
                     TextFormField(
                       readOnly: true,
@@ -194,7 +190,6 @@ class _PermissionRequestScreenState extends State<PermissionRequestScreen> {
                       onTap: () => _selectDate(context, true),
                     ),
                     const SizedBox(height: 16),
-                    // Tanggal Selesai
                     const Text('Tanggal Selesai', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
                     TextFormField(
                       readOnly: true,
@@ -208,14 +203,12 @@ class _PermissionRequestScreenState extends State<PermissionRequestScreen> {
                       onTap: () => _selectDate(context, false),
                     ),
                     const SizedBox(height: 16),
-                    // Jumlah Hari (hanya ditampilkan, dihitung otomatis)
                     if (_fromDate != null && _toDate != null)
                       Text(
                         'Jumlah Hari: ${_toDate!.difference(_fromDate!).inDays + 1}',
                         style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                       ),
                     const SizedBox(height: 16),
-                    // Catatan
                     const Text('Catatan', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
                     TextFormField(
                       maxLines: 3,
@@ -234,7 +227,6 @@ class _PermissionRequestScreenState extends State<PermissionRequestScreen> {
                       },
                     ),
                     const SizedBox(height: 16),
-                    // Unggah File
                     const Text('File Pendukung (Opsional)',
                         style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
                     Row(
@@ -255,7 +247,6 @@ class _PermissionRequestScreenState extends State<PermissionRequestScreen> {
                         ),
                       ],
                     ),
-                    // Preview File jika gambar
                     if (_file != null && _fileName != null && _isImageFile(_fileName!))
                       Padding(
                         padding: const EdgeInsets.only(top: 16.0),
@@ -267,7 +258,6 @@ class _PermissionRequestScreenState extends State<PermissionRequestScreen> {
                         ),
                       ),
                     const SizedBox(height: 24),
-                    // Tombol Submit
                     ElevatedButton(
                       onPressed: _submitPermission,
                       style: ElevatedButton.styleFrom(

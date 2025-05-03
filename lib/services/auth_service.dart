@@ -135,7 +135,6 @@ class AuthService {
     }
   }
 
-  // Fungsi untuk mengajukan izin
   Future<Map<String, dynamic>> submitPermission(Permission permission) async {
     try {
       await _firestore.collection('izin').doc(permission.id).set(permission.toMap());
@@ -145,7 +144,6 @@ class AuthService {
     }
   }
 
-  // Fungsi untuk mengambil daftar pengajuan izin karyawan
   Future<List<Permission>> getUserPermissions(String uid) async {
     try {
       final snapshot = await _firestore
@@ -160,11 +158,11 @@ class AuthService {
     }
   }
 
-  // Fungsi untuk mengambil semua pengajuan izin (untuk Kepala Cabang)
   Future<List<Permission>> getAllPermissions() async {
     try {
       final snapshot = await _firestore
           .collection('izin')
+          .where('status', isEqualTo: 'Pending')
           .orderBy('submissionDate', descending: true)
           .get();
       return snapshot.docs.map((doc) => Permission.fromMap(doc.data(), doc.id)).toList();
@@ -174,7 +172,6 @@ class AuthService {
     }
   }
 
-  // Fungsi untuk memperbarui status pengajuan izin (oleh Kepala Cabang)
   Future<Map<String, dynamic>> updatePermissionStatus({
     required String permissionId,
     required String status,
@@ -182,10 +179,13 @@ class AuthService {
     String? reviewNotes,
   }) async {
     try {
+      final user = _auth.currentUser;
+      if (user == null) throw Exception('User tidak login');
       await _firestore.collection('izin').doc(permissionId).update({
         'status': status,
         'reviewedBy': reviewedBy,
         'reviewNotes': reviewNotes,
+        'reviewDate': FieldValue.serverTimestamp(),
       });
       return {'success': true};
     } catch (e) {

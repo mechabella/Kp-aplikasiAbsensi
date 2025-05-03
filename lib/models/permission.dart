@@ -1,3 +1,5 @@
+import '../services/auth_service.dart';
+
 class Permission {
   final String id;
   final String uid;
@@ -6,7 +8,7 @@ class Permission {
   final DateTime toDate;
   final int duration;
   final String notes;
-  final String fileUrl;
+  final String? fileUrl;
   final String type;
   final String status;
   final DateTime submissionDate;
@@ -21,7 +23,7 @@ class Permission {
     required this.toDate,
     required this.duration,
     required this.notes,
-    required this.fileUrl,
+    this.fileUrl,
     required this.type,
     required this.status,
     required this.submissionDate,
@@ -48,15 +50,16 @@ class Permission {
   }
 
   factory Permission.fromMap(Map<String, dynamic> map, String id) {
+    final authService = AuthService(); // Untuk fallback ke getUserData jika nama tidak ada
     return Permission(
       id: id,
       uid: map['uid'] ?? '',
-      nama: map['nama'] ?? '',
+      nama: map['nama'] ?? (map['uid'] != null ? (authService.getUserData(map['uid']).then((data) => data?['nama'] ?? 'Unknown')) as String : 'Unknown'),
       fromDate: DateTime.parse(map['fromDate']),
       toDate: DateTime.parse(map['toDate']),
       duration: map['duration'] ?? 0,
       notes: map['notes'] ?? '',
-      fileUrl: map['fileUrl'] ?? '',
+      fileUrl: map['fileUrl'],
       type: map['type'] ?? '',
       status: map['status'] ?? 'Pending',
       submissionDate: DateTime.parse(map['submissionDate']),

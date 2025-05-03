@@ -21,7 +21,9 @@ class _PermissionHistoryScreenState extends State<PermissionHistoryScreen> {
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else {
-      throw 'Tidak dapat membuka file: $url';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Tidak dapat membuka file: $url')),
+      );
     }
   }
 
@@ -44,7 +46,6 @@ class _PermissionHistoryScreenState extends State<PermissionHistoryScreen> {
       ),
       body: Column(
         children: [
-          // Filter Status
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: DropdownButtonFormField<String>(
@@ -73,26 +74,29 @@ class _PermissionHistoryScreenState extends State<PermissionHistoryScreen> {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 }
-                if (snapshot.hasError || !snapshot.hasData || snapshot.data!.isEmpty) {
+                if (snapshot.hasError) {
+                  print('Error fetching permissions: ${snapshot.error}'); // Debugging
                   return Center(
-                    child: snapshot.hasError
-                        ? Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text('Error: ${snapshot.error}'),
-                              const SizedBox(height: 16),
-                              ElevatedButton(
-                                onPressed: () => setState(() {}),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF001F54),
-                                  foregroundColor: Colors.white,
-                                ),
-                                child: const Text('Coba Lagi'),
-                              ),
-                            ],
-                          )
-                        : const Text('Belum ada pengajuan izin'),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text('Error: ${snapshot.error}'),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () => setState(() {}),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF001F54),
+                            foregroundColor: Colors.white,
+                          ),
+                          child: const Text('Coba Lagi'),
+                        ),
+                      ],
+                    ),
                   );
+                }
+                if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  print('No permissions data for uid: ${user.uid}'); // Debugging
+                  return const Center(child: Text('Belum ada pengajuan izin'));
                 }
 
                 final permissions = snapshot.data!
@@ -101,6 +105,7 @@ class _PermissionHistoryScreenState extends State<PermissionHistoryScreen> {
                     .toList();
 
                 if (permissions.isEmpty) {
+                  print('Filtered permissions empty for status: $_filterStatus'); // Debugging
                   return const Center(child: Text('Tidak ada data untuk status ini'));
                 }
 
@@ -116,13 +121,27 @@ class _PermissionHistoryScreenState extends State<PermissionHistoryScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              'Jenis Izin: ${permission.type}',
-                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                            FutureBuilder<Map<String, dynamic>?>(
+                              future: authService.getUserData(permission.uid),
+                              builder: (context, userSnapshot) {
+                                if (userSnapshot.connectionState == ConnectionState.waiting) {
+                                  return const Text('Memuat nama pengaju...');
+                                }
+                                final nama = userSnapshot.data?['nama'] ?? permission.nama ?? 'Unknown';
+                                return Text(
+                                  'Pengaju: $nama',
+                                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                );
+                              },
                             ),
                             const SizedBox(height: 8),
                             Text(
-                                'Tanggal: ${DateFormat('dd MMMM yyyy').format(permission.fromDate)} - ${DateFormat('dd MMMM yyyy').format(permission.toDate)}'),
+                              'Jenis Izin: ${permission.type}',
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Tanggal: ${DateFormat('dd MMMM yyyy').format(permission.fromDate)} - ${DateFormat('dd MMMM yyyy').format(permission.toDate)}',
+                            ),
                             Text('Jumlah Hari: ${permission.duration}'),
                             Text('Catatan: ${permission.notes}'),
                             Text(
@@ -136,12 +155,13 @@ class _PermissionHistoryScreenState extends State<PermissionHistoryScreen> {
                               ),
                             ),
                             Text(
-                                'Diajukan pada: ${DateFormat('dd MMMM yyyy, HH:mm').format(permission.submissionDate)}'),
-                            if (permission.fileUrl.isNotEmpty)
+                              'Diajukan pada: ${DateFormat('dd MMMM yyyy, HH:mm').format(permission.submissionDate)}',
+                            ),
+                            if (permission.fileUrl != null && permission.fileUrl!.isNotEmpty)
                               TextButton(
                                 onPressed: () async {
                                   try {
-                                    await _openFile(permission.fileUrl);
+                                    await _openFile(permission.fileUrl!);
                                   } catch (e) {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(content: Text('Error: $e')),
