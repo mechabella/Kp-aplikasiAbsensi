@@ -96,6 +96,7 @@ class _HistoryAttendanceScreenState extends State<HistoryAttendanceScreen> {
       sheet.appendRow([
         user['nama'] ?? 'Unknown',
         DateFormat('dd MMMM yyyy, HH:mm').format(attendance.timestamp),
+        attendance.type,
       ]);
     }
 
@@ -323,6 +324,7 @@ class _HistoryAttendanceScreenState extends State<HistoryAttendanceScreen> {
                                             Text(
                                               'Tanggal: ${DateFormat('dd MMMM yyyy, HH:mm').format(attendance.timestamp)}',
                                             ),
+                                            Text('Status: ${attendance.type}'),
                                           ],
                                         ),
                                       ),

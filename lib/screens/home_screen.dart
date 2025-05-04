@@ -33,17 +33,20 @@ class _HomeScreenState extends State<HomeScreen> {
       stream: authService.authStateChanges,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(body: Center(child: CircularProgressIndicator()));
+          return const Scaffold(
+              body: Center(child: CircularProgressIndicator()));
         }
         if (!snapshot.hasData) {
-          return const Scaffold(body: Center(child: Text('Silakan login terlebih dahulu')));
+          return const Scaffold(
+              body: Center(child: Text('Silakan login terlebih dahulu')));
         }
 
         return FutureBuilder<Map<String, dynamic>?>(
           future: authService.getUserData(snapshot.data!.uid),
           builder: (context, userSnapshot) {
             if (userSnapshot.connectionState == ConnectionState.waiting) {
-              return const Scaffold(body: Center(child: CircularProgressIndicator()));
+              return const Scaffold(
+                  body: Center(child: CircularProgressIndicator()));
             }
             if (userSnapshot.hasError || !userSnapshot.hasData) {
               return Scaffold(
@@ -71,9 +74,11 @@ class _HomeScreenState extends State<HomeScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const SizedBox(height: 16),
-                              _buildAttendanceCard(context, role, snapshot.data!.uid),
+                              _buildAttendanceCard(
+                                  context, role, snapshot.data!.uid),
                               const SizedBox(height: 20),
-                              _buildAttendanceHistory(authService, snapshot.data!.uid),
+                              _buildAttendanceHistory(
+                                  authService, snapshot.data!.uid),
                             ],
                           ),
                         ),
@@ -98,9 +103,11 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           CircleAvatar(
             radius: 18,
-            backgroundImage: userData['fotoUrl'] != null && userData['fotoUrl'].isNotEmpty
-                ? NetworkImage(userData['fotoUrl'])
-                : const AssetImage('assets/default_profile.png') as ImageProvider,
+            backgroundImage:
+                userData['fotoUrl'] != null && userData['fotoUrl'].isNotEmpty
+                    ? NetworkImage(userData['fotoUrl'])
+                    : const AssetImage('assets/default_profile.png')
+                        as ImageProvider,
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -132,7 +139,8 @@ class _HomeScreenState extends State<HomeScreen> {
               icon: const Icon(Icons.people, color: Colors.white, size: 22),
               onPressed: () => Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const ManageUsersScreen()),
+                MaterialPageRoute(
+                    builder: (context) => const ManageUsersScreen()),
               ),
               tooltip: 'Kelola Pengguna',
             ),
@@ -141,7 +149,8 @@ class _HomeScreenState extends State<HomeScreen> {
               icon: const Icon(Icons.note_add, color: Colors.white, size: 22),
               onPressed: () => Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const PermissionRequestScreen()),
+                MaterialPageRoute(
+                    builder: (context) => const PermissionRequestScreen()),
               ),
               tooltip: 'Ajukan Izin',
             ),
@@ -149,7 +158,8 @@ class _HomeScreenState extends State<HomeScreen> {
               icon: const Icon(Icons.history, color: Colors.white, size: 22),
               onPressed: () => Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const PermissionHistoryScreen()),
+                MaterialPageRoute(
+                    builder: (context) => const PermissionHistoryScreen()),
               ),
               tooltip: 'Riwayat Pengajuan Izin',
             ),
@@ -192,7 +202,8 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(height: 5),
             StreamBuilder<DateTime>(
-              stream: Stream.periodic(const Duration(seconds: 1), (_) => DateTime.now()),
+              stream: Stream.periodic(
+                  const Duration(seconds: 1), (_) => DateTime.now()),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
                   return const Text(
@@ -299,33 +310,41 @@ class _HomeScreenState extends State<HomeScreen> {
                                 if (hasClockedIn) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
-                                      content: Text('Anda sudah melakukan Clock In hari ini'),
+                                      content: Text(
+                                          'Anda sudah melakukan Clock In hari ini'),
                                     ),
                                   );
                                   return;
                                 }
                                 await Navigator.push(
                                   context,
-                                  MaterialPageRoute(builder: (context) => const ClockInScreen()),
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          const ClockInScreen()),
                                 );
                                 setState(() {});
                               }
                             : () {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
-                                    content: Text('Hanya karyawan yang dapat melakukan Clock In'),
+                                    content: Text(
+                                        'Hanya karyawan yang dapat melakukan Clock In'),
                                   ),
                                 );
                               },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: hasClockedIn ? Colors.green : const Color(0xFF001F54),
+                          backgroundColor: hasClockedIn
+                              ? Colors.green
+                              : const Color(0xFF001F54),
                           foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8)),
                           padding: const EdgeInsets.symmetric(vertical: 20),
                         ),
                         child: const Text(
                           'Clock In',
-                          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                          style: TextStyle(
+                              fontWeight: FontWeight.w600, fontSize: 16),
                         ),
                       ),
                     ),
@@ -337,7 +356,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                 if (!hasClockedIn) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
-                                      content: Text('Anda belum melakukan Clock In hari ini'),
+                                      content: Text(
+                                          'Anda belum melakukan Clock In hari ini'),
                                     ),
                                   );
                                   return;
@@ -345,33 +365,41 @@ class _HomeScreenState extends State<HomeScreen> {
                                 if (hasClockedOut) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
-                                      content: Text('Anda sudah melakukan Clock Out hari ini'),
+                                      content: Text(
+                                          'Anda sudah melakukan Clock Out hari ini'),
                                     ),
                                   );
                                   return;
                                 }
                                 await Navigator.push(
                                   context,
-                                  MaterialPageRoute(builder: (context) => const ClockOutScreen()),
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          const ClockOutScreen()),
                                 );
                                 setState(() {});
                               }
                             : () {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
-                                    content: Text('Hanya karyawan yang dapat melakukan Clock Out'),
+                                    content: Text(
+                                        'Hanya karyawan yang dapat melakukan Clock Out'),
                                   ),
                                 );
                               },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: hasClockedOut ? Colors.green : const Color(0xFF001F54),
+                          backgroundColor: hasClockedOut
+                              ? Colors.green
+                              : const Color(0xFF001F54),
                           foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8)),
                           padding: const EdgeInsets.symmetric(vertical: 20),
                         ),
                         child: const Text(
                           'Clock Out',
-                          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                          style: TextStyle(
+                              fontWeight: FontWeight.w600, fontSize: 16),
                         ),
                       ),
                     ),
@@ -417,21 +445,29 @@ class _HomeScreenState extends State<HomeScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Header
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Row(
                 children: [
-                  Icon(Icons.history, size: 18, color: Colors.black54),
-                  SizedBox(width: 8),
+                  Icon(Icons.history, size: 20, color: Colors.blue),
+                  SizedBox(width: 10),
                   Text(
                     'Attendance History',
                     style: TextStyle(
-                      fontSize: 15,
+                      fontSize: 16,
                       fontWeight: FontWeight.w600,
                       color: Colors.black87,
                     ),
@@ -439,98 +475,181 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
               IconButton(
-                icon: const Icon(Icons.refresh, size: 18, color: Colors.black54),
+                icon: const Icon(Icons.refresh, size: 20, color: Colors.blue),
                 onPressed: () => setState(() {}),
                 tooltip: 'Refresh Riwayat',
               ),
             ],
           ),
           const SizedBox(height: 16),
+
+          // Attendance List
           FutureBuilder<List<Attendance>>(
             future: authService.getUserAttendance(uid),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(20.0),
+                    child: CircularProgressIndicator(),
+                  ),
+                );
               }
-              if (snapshot.hasError || !snapshot.hasData || snapshot.data!.isEmpty) {
-                return const Center(child: Text('Belum ada data absensi'));
+              if (snapshot.hasError ||
+                  !snapshot.hasData ||
+                  snapshot.data!.isEmpty) {
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Column(
+                      children: [
+                        Icon(Icons.event_busy,
+                            size: 40, color: Colors.grey[400]),
+                        const SizedBox(height: 12),
+                        Text(
+                          'Belum ada data absensi',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
               }
 
               final attendanceData = snapshot.data!;
               final attendanceByDate = <String, Map<String, DateTime?>>{};
               for (var attendance in attendanceData) {
-                final dateKey = DateFormat('yyyy-MM-dd').format(attendance.timestamp);
-                attendanceByDate.putIfAbsent(dateKey, () => {'clock_in': null, 'clock_out': null});
+                final dateKey =
+                    DateFormat('yyyy-MM-dd').format(attendance.timestamp);
+                attendanceByDate.putIfAbsent(
+                    dateKey, () => {'clock_in': null, 'clock_out': null});
                 if (attendance.type == 'clock_in' &&
                     (attendanceByDate[dateKey]!['clock_in'] == null ||
-                        attendance.timestamp.isBefore(attendanceByDate[dateKey]!['clock_in']!))) {
+                        attendance.timestamp.isBefore(
+                            attendanceByDate[dateKey]!['clock_in']!))) {
                   attendanceByDate[dateKey]!['clock_in'] = attendance.timestamp;
                 } else if (attendance.type == 'clock_out' &&
                     (attendanceByDate[dateKey]!['clock_out'] == null ||
-                        attendance.timestamp.isAfter(attendanceByDate[dateKey]!['clock_out']!))) {
-                  attendanceByDate[dateKey]!['clock_out'] = attendance.timestamp;
+                        attendance.timestamp.isAfter(
+                            attendanceByDate[dateKey]!['clock_out']!))) {
+                  attendanceByDate[dateKey]!['clock_out'] =
+                      attendance.timestamp;
                 }
               }
 
-              return Column(
-                children: [
-                  Table(
-                    border: TableBorder.all(color: Colors.grey[300]!, width: 1),
-                    columnWidths: const {0: FlexColumnWidth(2), 1: FlexColumnWidth(1)},
-                    children: [
-                      TableRow(
-                        decoration: BoxDecoration(color: Colors.grey[200]),
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text('Date', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text('Time', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
-                          ),
-                        ],
+              final sortedDates = attendanceByDate.keys.toList()
+                ..sort((a, b) => b.compareTo(a));
+
+              return ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: sortedDates.length,
+                separatorBuilder: (context, index) =>
+                    const SizedBox(height: 10),
+                itemBuilder: (context, index) {
+                  final dateKey = sortedDates[index];
+                  final clockIn = attendanceByDate[dateKey]!['clock_in'];
+                  final clockOut = attendanceByDate[dateKey]!['clock_out'];
+
+                  final isLate = _isLate(clockIn);
+                  final isEarlyOut = _isEarlyOut(clockOut);
+                  final hasIssue = isLate || isEarlyOut;
+
+                  return Container(
+                    decoration: BoxDecoration(
+                      color: hasIssue
+                          ? Colors.red.withOpacity(0.05)
+                          : Colors.blue.withOpacity(0.05),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: hasIssue
+                            ? Colors.red.withOpacity(0.2)
+                            : Colors.blue.withOpacity(0.2),
+                        width: 1,
                       ),
-                    ],
-                  ),
-                  for (var dateKey in attendanceByDate.keys)
-                    Table(
-                      border: TableBorder.all(color: Colors.grey[300]!, width: 1),
-                      columnWidths: const {0: FlexColumnWidth(2), 1: FlexColumnWidth(1)},
+                    ),
+                    padding: const EdgeInsets.all(12),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        TableRow(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text(
-                                DateFormat('EEE, dd MMMM yyyy').format(DateTime.parse(dateKey)),
+                        // Date circle
+                        Container(
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: hasIssue
+                                ? Colors.red.withOpacity(0.1)
+                                : Colors.blue.withOpacity(0.1),
+                          ),
+                          child: Center(
+                            child: Text(
+                              DateFormat('dd').format(DateTime.parse(dateKey)),
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: hasIssue ? Colors.red : Colors.blue,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+
+                        // Date and time info
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                DateFormat('EEEE, dd MMMM yyyy')
+                                    .format(DateTime.parse(dateKey)),
                                 style: const TextStyle(
                                   fontSize: 14,
-                                  fontWeight: FontWeight.w500,
+                                  fontWeight: FontWeight.w600,
                                   color: Colors.black87,
                                 ),
                               ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text(
-                                '${attendanceByDate[dateKey]!['clock_in'] != null ? DateFormat('HH:mm').format(attendanceByDate[dateKey]!['clock_in']!) : '-'} - ${attendanceByDate[dateKey]!['clock_out'] != null ? DateFormat('hh:mm a').format(attendanceByDate[dateKey]!['clock_out']!) : '-'}',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                  color: _isLateOrEarly(
-                                          attendanceByDate[dateKey]!['clock_in'],
-                                          attendanceByDate[dateKey]!['clock_out'])
-                                      ? Colors.red
-                                      : Colors.black87,
-                                ),
+                              const SizedBox(height: 6),
+                              Row(
+                                children: [
+                                  Text(
+                                    'Jam: ',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: Colors.grey[600],
+                                    ),
+                                  ),
+                                  Text(
+                                    '${clockIn != null ? DateFormat('HH:mm').format(clockIn) : '-'} - ${clockOut != null ? DateFormat('HH:mm').format(clockOut) : '-'}',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                      color: hasIssue
+                                          ? Colors.red[700]
+                                          : Colors.black87,
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
+                        ),
+
+                        // Status indicator
+                        Icon(
+                          hasIssue
+                              ? Icons.warning_amber_rounded
+                              : Icons.check_circle_outline,
+                          color: hasIssue ? Colors.red : Colors.green,
+                          size: 20,
                         ),
                       ],
                     ),
-                ],
+                  );
+                },
               );
             },
           ),
@@ -539,10 +658,13 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  bool _isLateOrEarly(DateTime? clockIn, DateTime? clockOut) {
-    if (clockIn == null || clockOut == null) return false;
-    final isLate = clockIn.hour >= 8 && clockIn.minute > 0;
-    final isEarly = clockOut.hour < 17 || (clockOut.hour == 17 && clockOut.minute == 0);
-    return isLate || isEarly;
+  bool _isLate(DateTime? clockIn) {
+    if (clockIn == null) return false;
+    return clockIn.hour >= 8 && clockIn.minute > 0;
+  }
+
+  bool _isEarlyOut(DateTime? clockOut) {
+    if (clockOut == null) return false;
+    return clockOut.hour < 17 || (clockOut.hour == 17 && clockOut.minute == 0);
   }
 }
