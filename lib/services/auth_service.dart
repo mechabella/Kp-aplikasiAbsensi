@@ -135,6 +135,19 @@ class AuthService {
     }
   }
 
+  Future<List<Attendance>> getAllAttendance() async {
+    try {
+      final snapshot = await _firestore
+          .collection('absensi')
+          .orderBy('timestamp', descending: true)
+          .get();
+      return snapshot.docs.map((doc) => Attendance.fromMap(doc.data(), doc.id)).toList();
+    } catch (e) {
+      print('Error getting all attendance: $e');
+      return [];
+    }
+  }
+
   Future<Map<String, dynamic>> submitPermission(Permission permission) async {
     try {
       await _firestore.collection('izin').doc(permission.id).set(permission.toMap());

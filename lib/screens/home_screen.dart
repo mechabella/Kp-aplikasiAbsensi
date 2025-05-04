@@ -424,11 +424,11 @@ class _HomeScreenState extends State<HomeScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
+              const Row(
                 children: [
-                  const Icon(Icons.history, size: 18, color: Colors.black54),
-                  const SizedBox(width: 8),
-                  const Text(
+                  Icon(Icons.history, size: 18, color: Colors.black54),
+                  SizedBox(width: 8),
+                  Text(
                     'Attendance History',
                     style: TextStyle(
                       fontSize: 15,

@@ -47,6 +47,8 @@ dependencies:
   url_launcher: ^6.2.0
   image: ^4.2.0
   geocoding: ^3.0.0
+  excel: ^2.0.0
+  permission_handler: ^10.0.0
   
 
 

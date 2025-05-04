@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
 import 'permission_management_screen.dart';
+import 'history_attendance_screen.dart';
 
 class ManageUsersScreen extends StatefulWidget {
   const ManageUsersScreen({super.key});
@@ -61,6 +62,16 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
               );
             },
             tooltip: 'Kelola Pengajuan Izin',
+          ),
+          IconButton(
+            icon: const Icon(Icons.history, color: Colors.white),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const HistoryAttendanceScreen()),
+              );
+            },
+            tooltip: 'Riwayat Absensi',
           ),
         ],
       ),
@@ -244,7 +255,6 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
             ),
             ElevatedButton(
               onPressed: () async {
-                // Validasi manual karena TextFormField tidak berada di Form
                 if (namaController.text.trim().isEmpty ||
                     emailController.text.trim().isEmpty ||
                     passwordController.text.trim().isEmpty ||
@@ -282,7 +292,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Karyawan berhasil ditambahkan')),
                   );
-                  await _loadUsers(); // Refresh daftar pengguna
+                  await _loadUsers();
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text(result['error'] ?? 'Gagal menambahkan karyawan')),
@@ -386,7 +396,6 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
             ),
             ElevatedButton(
               onPressed: () async {
-                // Validasi manual
                 if (namaController.text.trim().isEmpty ||
                     emailController.text.trim().isEmpty ||
                     idController.text.trim().isEmpty ||
@@ -417,7 +426,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Karyawan berhasil diperbarui')),
                   );
-                  await _loadUsers(); // Refresh daftar pengguna
+                  await _loadUsers();
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text(result['error'] ?? 'Gagal memperbarui karyawan')),
@@ -456,7 +465,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Karyawan berhasil dihapus')),
                 );
-                await _loadUsers(); // Refresh daftar pengguna
+                await _loadUsers();
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text(result['error'] ?? 'Gagal menghapus karyawan')),
