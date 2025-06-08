@@ -125,7 +125,7 @@ class _LoginScreenState extends State<LoginScreen> {
             onPressed: () => Navigator.pop(context),
             child: const Text(
               'OK',
-              style: TextStyle(color: Color(0xFF001F54)),
+              style: TextStyle(color: Color.fromARGB(255, 72, 115, 189)),
             ),
           ),
         ],
@@ -175,14 +175,14 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           // Logo
           Positioned(
-            top: size.height * 0.12,
+            top: size.height * 0.07,
             left: 0,
             right: 0,
             child: Center(
               child: Image.asset(
                 'assets/logo.png',
-                height: 80,
-                width: 80,
+                height: 120,
+                width: 120,
               ),
             ),
           ),

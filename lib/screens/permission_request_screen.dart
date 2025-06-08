@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import 'package:file_picker/file_picker.dart';
+// import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/auth_service.dart';
 import '../models/permission.dart';
@@ -12,7 +12,8 @@ class PermissionRequestScreen extends StatefulWidget {
   const PermissionRequestScreen({super.key});
 
   @override
-  _PermissionRequestScreenState createState() => _PermissionRequestScreenState();
+  _PermissionRequestScreenState createState() =>
+      _PermissionRequestScreenState();
 }
 
 class _PermissionRequestScreenState extends State<PermissionRequestScreen> {
@@ -46,18 +47,18 @@ class _PermissionRequestScreenState extends State<PermissionRequestScreen> {
     }
   }
 
-  Future<void> _pickFile() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      type: FileType.any,
-      allowMultiple: false,
-    );
-    if (result != null && result.files.single.path != null) {
-      setState(() {
-        _file = File(result.files.single.path!);
-        _fileName = result.files.single.name;
-      });
-    }
-  }
+  // Future<void> _pickFile() async {
+  //   FilePickerResult? result = await FilePicker.platform.pickFiles(
+  //     type: FileType.any,
+  //     allowMultiple: false,
+  //   );
+  //   if (result != null && result.files.single.path != null) {
+  //     setState(() {
+  //       _file = File(result.files.single.path!);
+  //       _fileName = result.files.single.name;
+  //     });
+  //   }
+  // }
 
   Future<void> _submitPermission() async {
     if (!_formKey.currentState!.validate()) return;
@@ -69,7 +70,8 @@ class _PermissionRequestScreenState extends State<PermissionRequestScreen> {
     }
     if (_toDate!.isBefore(_fromDate!)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Tanggal selesai tidak boleh sebelum tanggal mulai')),
+        const SnackBar(
+            content: Text('Tanggal selesai tidak boleh sebelum tanggal mulai')),
       );
       return;
     }
@@ -82,10 +84,11 @@ class _PermissionRequestScreenState extends State<PermissionRequestScreen> {
       String fileUrl = '';
       if (_file != null) {
         fileUrl = await DriveHelper.uploadToGoogleDrive(
-          _file!,
-          assetCredentialsPath: 'assets/absensi-458109-453307b07c38.json',
-          targetFolderId: DriveHelper.permissionFolderId,
-        ) ?? '';
+              _file!,
+              assetCredentialsPath: 'assets/absensi-458109-453307b07c38.json',
+              targetFolderId: DriveHelper.permissionFolderId,
+            ) ??
+            '';
         if (fileUrl.isEmpty) {
           throw Exception('Gagal mengunggah file ke Google Drive');
         }
@@ -159,13 +162,16 @@ class _PermissionRequestScreenState extends State<PermissionRequestScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Jenis Izin', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                    const Text('Jenis Izin',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.w500)),
                     DropdownButtonFormField<String>(
                       value: _type,
                       items: const [
-                        DropdownMenuItem(value: 'Izin Sakit', child: Text('Izin Sakit')),
-                        DropdownMenuItem(value: 'Cuti Tahunan', child: Text('Cuti Tahunan')),
-                        DropdownMenuItem(value: 'Izin Pribadi', child: Text('Izin Pribadi')),
+                        DropdownMenuItem(
+                            value: 'Izin Sakit', child: Text('Izin Sakit')),
+                        DropdownMenuItem(
+                            value: 'Izin Pribadi', child: Text('Izin Pribadi')),
                       ],
                       onChanged: (value) {
                         setState(() {
@@ -177,7 +183,9 @@ class _PermissionRequestScreenState extends State<PermissionRequestScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    const Text('Tanggal Mulai', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                    const Text('Tanggal Mulai',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.w500)),
                     TextFormField(
                       readOnly: true,
                       decoration: InputDecoration(
@@ -190,7 +198,9 @@ class _PermissionRequestScreenState extends State<PermissionRequestScreen> {
                       onTap: () => _selectDate(context, true),
                     ),
                     const SizedBox(height: 16),
-                    const Text('Tanggal Selesai', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                    const Text('Tanggal Selesai',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.w500)),
                     TextFormField(
                       readOnly: true,
                       decoration: InputDecoration(
@@ -206,10 +216,13 @@ class _PermissionRequestScreenState extends State<PermissionRequestScreen> {
                     if (_fromDate != null && _toDate != null)
                       Text(
                         'Jumlah Hari: ${_toDate!.difference(_fromDate!).inDays + 1}',
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                        style: const TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.w500),
                       ),
                     const SizedBox(height: 16),
-                    const Text('Catatan', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                    const Text('Catatan',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.w500)),
                     TextFormField(
                       maxLines: 3,
                       decoration: const InputDecoration(
@@ -228,7 +241,8 @@ class _PermissionRequestScreenState extends State<PermissionRequestScreen> {
                     ),
                     const SizedBox(height: 16),
                     const Text('File Pendukung (Opsional)',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.w500)),
                     Row(
                       children: [
                         Expanded(
@@ -237,17 +251,19 @@ class _PermissionRequestScreenState extends State<PermissionRequestScreen> {
                             style: const TextStyle(fontSize: 16),
                           ),
                         ),
-                        ElevatedButton(
-                          onPressed: _pickFile,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF001F54),
-                            foregroundColor: Colors.white,
-                          ),
-                          child: const Text('Pilih File'),
-                        ),
+                        // ElevatedButton(
+                        //   onPressed: _pickFile,
+                        //   style: ElevatedButton.styleFrom(
+                        //     backgroundColor: const Color(0xFF001F54),
+                        //     foregroundColor: Colors.white,
+                        //   ),
+                        //   child: const Text('Pilih File'),
+                        // ),
                       ],
                     ),
-                    if (_file != null && _fileName != null && _isImageFile(_fileName!))
+                    if (_file != null &&
+                        _fileName != null &&
+                        _isImageFile(_fileName!))
                       Padding(
                         padding: const EdgeInsets.only(top: 16.0),
                         child: Image.file(

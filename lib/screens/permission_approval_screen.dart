@@ -10,7 +10,8 @@ class PermissionApprovalScreen extends StatefulWidget {
   const PermissionApprovalScreen({super.key});
 
   @override
-  _PermissionApprovalScreenState createState() => _PermissionApprovalScreenState();
+  _PermissionApprovalScreenState createState() =>
+      _PermissionApprovalScreenState();
 }
 
 class _PermissionApprovalScreenState extends State<PermissionApprovalScreen> {
@@ -28,7 +29,8 @@ class _PermissionApprovalScreenState extends State<PermissionApprovalScreen> {
     }
   }
 
-  Future<void> _updatePermissionStatus(AuthService authService, String permissionId, String newStatus) async {
+  Future<void> _updatePermissionStatus(
+      AuthService authService, String permissionId, String newStatus) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -37,7 +39,9 @@ class _PermissionApprovalScreenState extends State<PermissionApprovalScreen> {
       return;
     }
 
-    String? reviewNotes = _selectedPermissionId == permissionId ? _reviewNotesController.text : null;
+    String? reviewNotes = _selectedPermissionId == permissionId
+        ? _reviewNotesController.text
+        : null;
     if (newStatus == 'Rejected' && reviewNotes == null) {
       showDialog(
         context: context,
@@ -45,7 +49,8 @@ class _PermissionApprovalScreenState extends State<PermissionApprovalScreen> {
           title: const Text('Catatan Penolakan'),
           content: TextField(
             controller: _reviewNotesController,
-            decoration: const InputDecoration(labelText: 'Masukkan alasan penolakan'),
+            decoration:
+                const InputDecoration(labelText: 'Masukkan alasan penolakan'),
             maxLines: 3,
           ),
           actions: [
@@ -57,7 +62,8 @@ class _PermissionApprovalScreenState extends State<PermissionApprovalScreen> {
               onPressed: () {
                 reviewNotes = _reviewNotesController.text;
                 Navigator.pop(context);
-                _performUpdate(authService, permissionId, newStatus, user.uid, reviewNotes);
+                _performUpdate(authService, permissionId, newStatus, user.uid,
+                    reviewNotes);
               },
               child: const Text('Kirim'),
             ),
@@ -71,7 +77,8 @@ class _PermissionApprovalScreenState extends State<PermissionApprovalScreen> {
     _performUpdate(authService, permissionId, newStatus, user.uid, reviewNotes);
   }
 
-  void _performUpdate(AuthService authService, String permissionId, String newStatus, String reviewedBy, String? reviewNotes) async {
+  void _performUpdate(AuthService authService, String permissionId,
+      String newStatus, String reviewedBy, String? reviewNotes) async {
     try {
       await authService.updatePermissionStatus(
         permissionId: permissionId,
@@ -107,7 +114,8 @@ class _PermissionApprovalScreenState extends State<PermissionApprovalScreen> {
       future: authService.getUserData(user.uid),
       builder: (context, userSnapshot) {
         if (userSnapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(body: Center(child: CircularProgressIndicator()));
+          return const Scaffold(
+              body: Center(child: CircularProgressIndicator()));
         }
         if (userSnapshot.hasError || !userSnapshot.hasData) {
           return const Scaffold(
@@ -118,9 +126,11 @@ class _PermissionApprovalScreenState extends State<PermissionApprovalScreen> {
         final userData = userSnapshot.data!;
         final role = userData['role'] ?? 'karyawan';
 
-        if (role != 'kepala_cabang') {
+        if (role != 'kepala_cabang' || role != 'hrd') {
           return const Scaffold(
-            body: Center(child: Text('Hanya HRD yang dapat mengakses halaman ini')),
+            body: Center(
+                child: Text(
+                    'Hanya HRD dan Kepala Cabang yang dapat mengakses halaman ini')),
           );
         }
 
@@ -164,7 +174,8 @@ class _PermissionApprovalScreenState extends State<PermissionApprovalScreen> {
                   .toList();
 
               if (permissions.isEmpty) {
-                return const Center(child: Text('Tidak ada pengajuan yang perlu disetujui'));
+                return const Center(
+                    child: Text('Tidak ada pengajuan yang perlu disetujui'));
               }
 
               return ListView.builder(
@@ -182,20 +193,23 @@ class _PermissionApprovalScreenState extends State<PermissionApprovalScreen> {
                           FutureBuilder<Map<String, dynamic>?>(
                             future: authService.getUserData(permission.uid),
                             builder: (context, userSnapshot) {
-                              if (userSnapshot.connectionState == ConnectionState.waiting) {
+                              if (userSnapshot.connectionState ==
+                                  ConnectionState.waiting) {
                                 return const Text('Memuat data pengguna...');
                               }
                               final userData = userSnapshot.data;
                               return Text(
                                 'Pengaju: ${userData?['nama'] ?? 'Unknown'} (${userData?['id'] ?? 'Unknown'})',
-                                style: const TextStyle(fontSize: 14, color: Colors.grey),
+                                style: const TextStyle(
+                                    fontSize: 14, color: Colors.grey),
                               );
                             },
                           ),
                           const SizedBox(height: 8),
                           Text(
                             'Jenis Izin: ${permission.type}',
-                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                            style: const TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 8),
                           Text(
@@ -216,7 +230,8 @@ class _PermissionApprovalScreenState extends State<PermissionApprovalScreen> {
                           Text(
                             'Diajukan pada: ${DateFormat('dd MMMM yyyy, HH:mm').format(permission.submissionDate)}',
                           ),
-                          if (permission.fileUrl != null && permission.fileUrl!.isNotEmpty)
+                          if (permission.fileUrl != null &&
+                              permission.fileUrl!.isNotEmpty)
                             TextButton(
                               onPressed: () async {
                                 try {
@@ -239,12 +254,14 @@ class _PermissionApprovalScreenState extends State<PermissionApprovalScreen> {
                                 const SizedBox(height: 8),
                                 Text(
                                   'Diulas oleh: ${permission.reviewedBy}',
-                                  style: const TextStyle(fontSize: 14, color: Colors.grey),
+                                  style: const TextStyle(
+                                      fontSize: 14, color: Colors.grey),
                                 ),
                                 if (permission.reviewNotes != null)
                                   Text(
                                     'Catatan: ${permission.reviewNotes}',
-                                    style: const TextStyle(fontSize: 14, color: Colors.black54),
+                                    style: const TextStyle(
+                                        fontSize: 14, color: Colors.black54),
                                   ),
                               ],
                             ),
@@ -253,21 +270,25 @@ class _PermissionApprovalScreenState extends State<PermissionApprovalScreen> {
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
                               ElevatedButton(
-                                onPressed: () => _updatePermissionStatus(authService, permission.id, 'Approved'),
+                                onPressed: () => _updatePermissionStatus(
+                                    authService, permission.id, 'Approved'),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.green,
                                   foregroundColor: Colors.white,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8)),
                                 ),
                                 child: const Text('Setujui'),
                               ),
                               const SizedBox(width: 8),
                               ElevatedButton(
-                                onPressed: () => _updatePermissionStatus(authService, permission.id, 'Rejected'),
+                                onPressed: () => _updatePermissionStatus(
+                                    authService, permission.id, 'Rejected'),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.red,
                                   foregroundColor: Colors.white,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8)),
                                 ),
                                 child: const Text('Tolak'),
                               ),

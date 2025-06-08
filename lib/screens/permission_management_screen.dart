@@ -74,7 +74,7 @@ class _PermissionManagementScreenState extends State<PermissionManagementScreen>
         final userData = userSnapshot.data!;
         final role = userData['role'] ?? 'karyawan';
 
-        if (role != 'kepala_cabang') {
+        if (role != 'hrd') {
           return const Scaffold(
             body: Center(child: Text('Hanya HRD yang dapat mengakses halaman ini')),
           );

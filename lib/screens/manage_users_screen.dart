@@ -49,16 +49,20 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Kelola Karyawan'),
+        title: const Text('Kelola User'),
         backgroundColor: const Color(0xFF001F54),
         foregroundColor: Colors.white,
         actions: [
+          // if(){
+
+          // }
           IconButton(
             icon: const Icon(Icons.note, color: Colors.white),
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const PermissionManagementScreen()),
+                MaterialPageRoute(
+                    builder: (context) => const PermissionManagementScreen()),
               );
             },
             tooltip: 'Kelola Pengajuan Izin',
@@ -68,7 +72,8 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const HistoryAttendanceScreen()),
+                MaterialPageRoute(
+                    builder: (context) => const HistoryAttendanceScreen()),
               );
             },
             tooltip: 'Riwayat Absensi',
@@ -99,7 +104,8 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                   ? const Center(child: Text('Tidak ada data karyawan'))
                   : ListView.builder(
                       padding: const EdgeInsets.all(16),
-                      itemCount: users.length + 1, // +1 untuk tombol tambah karyawan
+                      itemCount:
+                          users.length + 1, // +1 untuk tombol tambah karyawan
                       itemBuilder: (context, index) {
                         if (index == 0) {
                           // Tombol Tambah Karyawan
@@ -110,7 +116,8 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFF001F54),
                                 foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 16),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8),
                                 ),
@@ -129,22 +136,31 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                           margin: const EdgeInsets.only(bottom: 12),
                           child: ListTile(
                             leading: CircleAvatar(
-                              backgroundImage: user['fotoUrl'] != null && user['fotoUrl'].isNotEmpty
+                              backgroundImage: user['fotoUrl'] != null &&
+                                      user['fotoUrl'].isNotEmpty
                                   ? NetworkImage(user['fotoUrl'])
-                                  : const AssetImage('assets/default_profile.png') as ImageProvider,
+                                  : const AssetImage(
+                                          'assets/default_profile.png')
+                                      as ImageProvider,
                             ),
                             title: Text(user['nama'] ?? 'Unknown'),
-                            subtitle: Text('${user['id'] ?? ''} - ${user['jabatan'] ?? 'Unknown'}'),
+                            subtitle: Text(
+                                '${user['id'] ?? ''} - ${user['jabatan'] ?? 'Unknown'}'),
                             trailing: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 IconButton(
-                                  icon: const Icon(Icons.edit, color: Colors.blue),
-                                  onPressed: () => _showEditUserDialog(context, user),
+                                  icon: const Icon(Icons.edit,
+                                      color: Colors.blue),
+                                  onPressed: () =>
+                                      _showEditUserDialog(context, user),
                                 ),
                                 IconButton(
-                                  icon: const Icon(Icons.delete, color: Colors.red),
-                                  onPressed: () => _showDeleteConfirmationDialog(context, user),
+                                  icon: const Icon(Icons.delete,
+                                      color: Colors.red),
+                                  onPressed: () =>
+                                      _showDeleteConfirmationDialog(
+                                          context, user),
                                 ),
                               ],
                             ),
@@ -167,7 +183,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
     showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
+        builder: (dialogContext, setState) => AlertDialog(
           title: const Text('Tambah Karyawan Baru'),
           content: SingleChildScrollView(
             child: Column(
@@ -235,9 +251,11 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                   value: role,
                   decoration: const InputDecoration(labelText: 'Role'),
                   items: const [
-                    DropdownMenuItem(value: 'karyawan', child: Text('Karyawan')),
+                    DropdownMenuItem(
+                        value: 'karyawan', child: Text('Karyawan')),
                     DropdownMenuItem(value: 'hrd', child: Text('HRD')),
-                    DropdownMenuItem(value: 'kepala_cabang', child: Text('Kepala Cabang')),
+                    DropdownMenuItem(
+                        value: 'kepala_cabang', child: Text('Kepala Cabang')),
                   ],
                   onChanged: (value) {
                     setState(() {
@@ -265,7 +283,8 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                   );
                   return;
                 }
-                if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(emailController.text.trim())) {
+                if (!RegExp(r'^[^@]+@[^@]+\.[^@]+')
+                    .hasMatch(emailController.text.trim())) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Masukkan email yang valid')),
                   );
@@ -273,7 +292,8 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                 }
                 if (passwordController.text.trim().length < 6) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Password minimal 6 karakter')),
+                    const SnackBar(
+                        content: Text('Password minimal 6 karakter')),
                   );
                   return;
                 }
@@ -290,12 +310,15 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                 if (result['success'] == true) {
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Karyawan berhasil ditambahkan')),
+                    const SnackBar(
+                        content: Text('Karyawan berhasil ditambahkan')),
                   );
                   await _loadUsers();
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(result['error'] ?? 'Gagal menambahkan karyawan')),
+                    SnackBar(
+                        content: Text(
+                            'Gagal menambahkan karyawan: ${result['error'] ?? 'Tidak diketahui'}')),
                   );
                 }
               },
@@ -376,9 +399,11 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                   value: role,
                   decoration: const InputDecoration(labelText: 'Role'),
                   items: const [
-                    DropdownMenuItem(value: 'karyawan', child: Text('Karyawan')),
+                    DropdownMenuItem(
+                        value: 'karyawan', child: Text('Karyawan')),
                     DropdownMenuItem(value: 'hrd', child: Text('HRD')),
-                    DropdownMenuItem(value: 'kepala_cabang', child: Text('Kepala Cabang')),
+                    DropdownMenuItem(
+                        value: 'kepala_cabang', child: Text('Kepala Cabang')),
                   ],
                   onChanged: (value) {
                     setState(() {
@@ -405,7 +430,8 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                   );
                   return;
                 }
-                if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(emailController.text.trim())) {
+                if (!RegExp(r'^[^@]+@[^@]+\.[^@]+')
+                    .hasMatch(emailController.text.trim())) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Masukkan email yang valid')),
                   );
@@ -424,12 +450,15 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                 if (result['success'] == true) {
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Karyawan berhasil diperbarui')),
+                    const SnackBar(
+                        content: Text('Karyawan berhasil diperbarui')),
                   );
                   await _loadUsers();
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(result['error'] ?? 'Gagal memperbarui karyawan')),
+                    SnackBar(
+                        content: Text(
+                            result['error'] ?? 'Gagal memperbarui karyawan')),
                   );
                 }
               },
@@ -445,7 +474,8 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
     );
   }
 
-  void _showDeleteConfirmationDialog(BuildContext context, Map<String, dynamic> user) {
+  void _showDeleteConfirmationDialog(
+      BuildContext context, Map<String, dynamic> user) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -458,7 +488,8 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
           ),
           ElevatedButton(
             onPressed: () async {
-              final authService = Provider.of<AuthService>(context, listen: false);
+              final authService =
+                  Provider.of<AuthService>(context, listen: false);
               final result = await authService.deleteUser(user['uid']);
               if (result['success'] == true) {
                 Navigator.pop(context);
@@ -468,7 +499,9 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                 await _loadUsers();
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(result['error'] ?? 'Gagal menghapus karyawan')),
+                  SnackBar(
+                      content:
+                          Text(result['error'] ?? 'Gagal menghapus karyawan')),
                 );
               }
             },

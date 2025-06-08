@@ -5,7 +5,7 @@ class Attendance {
   final double latitude;
   final double longitude;
   final DateTime timestamp;
-  final String type; 
+  final String type;
 
   Attendance({
     required this.id,

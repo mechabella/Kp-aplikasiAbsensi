@@ -12,7 +12,8 @@ class AuthService {
 
   Future<Map<String, dynamic>?> signIn(String email, String password) async {
     try {
-      final result = await _auth.signInWithEmailAndPassword(email: email, password: password);
+      final result = await _auth.signInWithEmailAndPassword(
+          email: email, password: password);
       if (result.user != null) {
         final userData = await getUserData(result.user!.uid);
         return {'user': result.user, 'data': userData};
@@ -61,19 +62,29 @@ class AuthService {
     String fotoUrl = '',
   }) async {
     try {
-      final callable = FirebaseFunctions.instance.httpsCallable('createUser');
-      final result = await callable.call({
-        'email': email,
-        'password': password,
-        'nama': nama,
-        'role': role,
-        'jabatan': jabatan,
-        'id': id,
-        'fotoUrl': fotoUrl,
-      });
-      return result.data;
-    } on FirebaseFunctionsException catch (e) {
-      return {'error': e.message ?? 'Gagal membuat user'};
+      // Buat pengguna baru di Firebase Authentication
+      final credential = await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      if (credential.user != null) {
+        // Simpan data pengguna ke Firestore
+        await _firestore.collection('users').doc(credential.user!.uid).set({
+          'nama': nama,
+          'role': role,
+          'jabatan': jabatan,
+          'email': email,
+          'id': id ?? credential.user!.uid,
+          'fotoUrl': fotoUrl,
+          'uid': credential.user!.uid, // Tambahkan uid untuk konsistensi
+        });
+
+        return {'success': true};
+      }
+      return {'error': 'Gagal membuat pengguna'};
+    } on FirebaseAuthException catch (e) {
+      return {'error': _mapAuthError(e.code)};
     } catch (e) {
       return {'error': 'Terjadi kesalahan: $e'};
     }
@@ -114,7 +125,10 @@ class AuthService {
 
   Future<Map<String, dynamic>> saveAttendance(Attendance attendance) async {
     try {
-      await _firestore.collection('absensi').doc(attendance.id).set(attendance.toMap());
+      await _firestore
+          .collection('absensi')
+          .doc(attendance.id)
+          .set(attendance.toMap());
       return {'success': true};
     } catch (e) {
       return {'error': 'Gagal menyimpan absensi: $e'};
@@ -128,7 +142,9 @@ class AuthService {
           .where('uid', isEqualTo: uid)
           .orderBy('timestamp', descending: true)
           .get();
-      return snapshot.docs.map((doc) => Attendance.fromMap(doc.data(), doc.id)).toList();
+      return snapshot.docs
+          .map((doc) => Attendance.fromMap(doc.data(), doc.id))
+          .toList();
     } catch (e) {
       print('Error getting attendance: $e');
       return [];
@@ -141,7 +157,9 @@ class AuthService {
           .collection('absensi')
           .orderBy('timestamp', descending: true)
           .get();
-      return snapshot.docs.map((doc) => Attendance.fromMap(doc.data(), doc.id)).toList();
+      return snapshot.docs
+          .map((doc) => Attendance.fromMap(doc.data(), doc.id))
+          .toList();
     } catch (e) {
       print('Error getting all attendance: $e');
       return [];
@@ -150,7 +168,10 @@ class AuthService {
 
   Future<Map<String, dynamic>> submitPermission(Permission permission) async {
     try {
-      await _firestore.collection('izin').doc(permission.id).set(permission.toMap());
+      await _firestore
+          .collection('izin')
+          .doc(permission.id)
+          .set(permission.toMap());
       return {'success': true};
     } catch (e) {
       return {'error': 'Gagal mengajukan izin: $e'};
@@ -164,7 +185,9 @@ class AuthService {
           .where('uid', isEqualTo: uid)
           .orderBy('submissionDate', descending: true)
           .get();
-      return snapshot.docs.map((doc) => Permission.fromMap(doc.data(), doc.id)).toList();
+      return snapshot.docs
+          .map((doc) => Permission.fromMap(doc.data(), doc.id))
+          .toList();
     } catch (e) {
       print('Error getting permissions: $e');
       return [];
@@ -178,7 +201,9 @@ class AuthService {
           .where('status', isEqualTo: 'Pending')
           .orderBy('submissionDate', descending: true)
           .get();
-      return snapshot.docs.map((doc) => Permission.fromMap(doc.data(), doc.id)).toList();
+      return snapshot.docs
+          .map((doc) => Permission.fromMap(doc.data(), doc.id))
+          .toList();
     } catch (e) {
       print('Error getting all permissions: $e');
       return [];
