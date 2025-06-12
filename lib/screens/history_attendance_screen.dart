@@ -54,27 +54,27 @@ class _HistoryAttendanceScreenState extends State<HistoryAttendanceScreen> {
   }
 
   Future<void> _selectDate(BuildContext context, bool isStartDate) async {
-    final DateTime? picked = await showDatePicker(
+    final DateTime? value = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
       firstDate: DateTime(2024),
       lastDate: DateTime(2026),
     );
-    if (picked != null) {
+    if (value != null) {
       setState(() {
         if (isStartDate) {
-          _startDate = picked;
-          if (_endDate != null && _endDate!.isBefore(picked)) {
-            _endDate = null;
+          _startDate = DateTime(value.year, value.month, value.day);
+          if (_endDate != null && _endDate!.isBefore(_startDate!)) {
+            _endDate = null; // Reset end date if it's before the new start date
           }
         } else {
-          if (_startDate != null && picked.isBefore(_startDate!)) {
+          _endDate = DateTime(value.year, value.month, value.day, 23, 59, 59);
+          if (_startDate != null && _endDate!.isBefore(_startDate!)) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Tanggal selesai harus setelah tanggal mulai')),
             );
-            return;
+            _endDate = null;
           }
-          _endDate = picked;
         }
       });
     }
@@ -130,12 +130,16 @@ class _HistoryAttendanceScreenState extends State<HistoryAttendanceScreen> {
     return _attendanceList.where((attendance) {
       bool passesUserFilter = _selectedUser == 'All' || attendance.uid == _selectedUser;
       bool passesDateFilter = true;
+
       if (_startDate != null) {
-        passesDateFilter = attendance.timestamp.isAfter(_startDate!.subtract(const Duration(days: 1)));
+        // Compare with start of the day
+        passesDateFilter = !attendance.timestamp.isBefore(_startDate!);
       }
       if (_endDate != null) {
-        passesDateFilter = passesDateFilter && attendance.timestamp.isBefore(_endDate!.add(const Duration(days: 1)));
+        // Compare with end of the day
+        passesDateFilter = passesDateFilter && !attendance.timestamp.isAfter(_endDate!);
       }
+
       return passesUserFilter && passesDateFilter;
     }).toList();
   }

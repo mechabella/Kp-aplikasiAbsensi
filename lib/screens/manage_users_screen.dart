@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
@@ -14,6 +15,7 @@ class ManageUsersScreen extends StatefulWidget {
 class _ManageUsersScreenState extends State<ManageUsersScreen> {
   List<Map<String, dynamic>> users = [];
   String? errorMessage;
+  final user = FirebaseAuth.instance.currentUser;
   bool _isLoading = true;
 
   @override
@@ -47,127 +49,143 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Kelola User'),
-        backgroundColor: const Color(0xFF001F54),
-        foregroundColor: Colors.white,
-        actions: [
-          // if(){
+    final authService = Provider.of<AuthService>(context, listen: false);
 
-          // }
-          IconButton(
-            icon: const Icon(Icons.note, color: Colors.white),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => const PermissionManagementScreen()),
-              );
-            },
-            tooltip: 'Kelola Pengajuan Izin',
-          ),
-          IconButton(
-            icon: const Icon(Icons.history, color: Colors.white),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => const HistoryAttendanceScreen()),
-              );
-            },
-            tooltip: 'Riwayat Absensi',
-          ),
-        ],
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : errorMessage != null
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(errorMessage!),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: _loadUsers,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF001F54),
-                          foregroundColor: Colors.white,
-                        ),
-                        child: const Text('Coba Lagi'),
-                      ),
-                    ],
-                  ),
-                )
-              : users.isEmpty
-                  ? const Center(child: Text('Tidak ada data karyawan'))
-                  : ListView.builder(
-                      padding: const EdgeInsets.all(16),
-                      itemCount:
-                          users.length + 1, // +1 untuk tombol tambah karyawan
-                      itemBuilder: (context, index) {
-                        if (index == 0) {
-                          // Tombol Tambah Karyawan
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 16),
-                            child: ElevatedButton.icon(
-                              onPressed: () => _showAddUserDialog(context),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF001F54),
-                                foregroundColor: Colors.white,
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 16),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                              ),
-                              icon: const Icon(Icons.add),
-                              label: const Text(
-                                'Tambah Karyawan',
-                                style: TextStyle(fontSize: 16),
-                              ),
-                            ),
-                          );
-                        }
+    if (user == null) {
+      return const Scaffold(
+        body: Center(child: Text('Silakan login terlebih dahulu')),
+      );
+    }
 
-                        final user = users[index - 1];
-                        return Card(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          child: ListTile(
-                            leading: CircleAvatar(
-                              backgroundImage: user['fotoUrl'] != null &&
-                                      user['fotoUrl'].isNotEmpty
-                                  ? NetworkImage(user['fotoUrl'])
-                                  : const AssetImage(
-                                          'assets/default_profile.png')
-                                      as ImageProvider,
+    return FutureBuilder<Map<String, dynamic>?>(
+      future: authService.getUserData(user!.uid),
+      builder: (context, userSnapshot) {
+        if (userSnapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(body: Center(child: CircularProgressIndicator()));
+        }
+        if (userSnapshot.hasError || !userSnapshot.hasData) {
+          return const Scaffold(
+            body: Center(child: Text('Gagal memuat data pengguna')),
+          );
+        }
+
+        final userData = userSnapshot.data!;
+        final role = userData['role'] ?? 'karyawan';
+
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text('Kelola User'),
+            backgroundColor: const Color(0xFF001F54),
+            foregroundColor: Colors.white,
+            actions: [
+              if (role == 'hrd')
+                IconButton(
+                  icon: const Icon(Icons.note, color: Colors.white),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const PermissionManagementScreen()),
+                    );
+                  },
+                  tooltip: 'Kelola Pengajuan Izin',
+                ),
+              IconButton(
+                icon: const Icon(Icons.history, color: Colors.white),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const HistoryAttendanceScreen()),
+                  );
+                },
+                tooltip: 'Riwayat Absensi',
+              ),
+            ],
+          ),
+          body: _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : errorMessage != null
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(errorMessage!),
+                          const SizedBox(height: 16),
+                          ElevatedButton(
+                            onPressed: _loadUsers,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF001F54),
+                              foregroundColor: Colors.white,
                             ),
-                            title: Text(user['nama'] ?? 'Unknown'),
-                            subtitle: Text(
-                                '${user['id'] ?? ''} - ${user['jabatan'] ?? 'Unknown'}'),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.edit,
-                                      color: Colors.blue),
-                                  onPressed: () =>
-                                      _showEditUserDialog(context, user),
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.delete,
-                                      color: Colors.red),
-                                  onPressed: () =>
-                                      _showDeleteConfirmationDialog(
-                                          context, user),
-                                ),
-                              ],
-                            ),
+                            child: const Text('Coba Lagi'),
                           ),
-                        );
-                      },
-                    ),
+                        ],
+                      ),
+                    )
+                  : users.isEmpty
+                      ? const Center(child: Text('Tidak ada data karyawan'))
+                      : ListView.builder(
+                          padding: const EdgeInsets.all(16),
+                          itemCount: users.length + 1, // +1 untuk tombol tambah karyawan
+                          itemBuilder: (context, index) {
+                            if (index == 0) {
+                              // Tombol Tambah Karyawan
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 16),
+                                child: ElevatedButton.icon(
+                                  onPressed: () => _showAddUserDialog(context),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFF001F54),
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(vertical: 16),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                  icon: const Icon(Icons.add),
+                                  label: const Text(
+                                    'Tambah Karyawan',
+                                    style: TextStyle(fontSize: 16),
+                                  ),
+                                ),
+                              );
+                            }
+
+                            final user = users[index - 1];
+                            return Card(
+                              margin: const EdgeInsets.only(bottom: 12),
+                              child: ListTile(
+                                leading: CircleAvatar(
+                                  backgroundImage: user['fotoUrl'] != null &&
+                                          user['fotoUrl'].isNotEmpty
+                                      ? NetworkImage(user['fotoUrl'])
+                                      : const AssetImage('assets/default_profile.png')
+                                          as ImageProvider,
+                                ),
+                                title: Text(user['nama'] ?? 'Unknown'),
+                                subtitle: Text(
+                                    '${user['id'] ?? ''} - ${user['jabatan'] ?? 'Unknown'}'),
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.edit, color: Colors.blue),
+                                      onPressed: () => _showEditUserDialog(context, user),
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.delete, color: Colors.red),
+                                      onPressed: () =>
+                                          _showDeleteConfirmationDialog(context, user),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+        );
+      },
     );
   }
 
@@ -251,11 +269,9 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                   value: role,
                   decoration: const InputDecoration(labelText: 'Role'),
                   items: const [
-                    DropdownMenuItem(
-                        value: 'karyawan', child: Text('Karyawan')),
+                    DropdownMenuItem(value: 'karyawan', child: Text('Karyawan')),
                     DropdownMenuItem(value: 'hrd', child: Text('HRD')),
-                    DropdownMenuItem(
-                        value: 'kepala_cabang', child: Text('Kepala Cabang')),
+                    DropdownMenuItem(value: 'kepala_cabang', child: Text('Kepala Cabang')),
                   ],
                   onChanged: (value) {
                     setState(() {
@@ -283,8 +299,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                   );
                   return;
                 }
-                if (!RegExp(r'^[^@]+@[^@]+\.[^@]+')
-                    .hasMatch(emailController.text.trim())) {
+                if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(emailController.text.trim())) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Masukkan email yang valid')),
                   );
@@ -292,8 +307,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                 }
                 if (passwordController.text.trim().length < 6) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('Password minimal 6 karakter')),
+                    const SnackBar(content: Text('Password minimal 6 karakter')),
                   );
                   return;
                 }
@@ -310,8 +324,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                 if (result['success'] == true) {
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('Karyawan berhasil ditambahkan')),
+                    const SnackBar(content: Text('Karyawan berhasil ditambahkan')),
                   );
                   await _loadUsers();
                 } else {
@@ -399,11 +412,9 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                   value: role,
                   decoration: const InputDecoration(labelText: 'Role'),
                   items: const [
-                    DropdownMenuItem(
-                        value: 'karyawan', child: Text('Karyawan')),
+                    DropdownMenuItem(value: 'karyawan', child: Text('Karyawan')),
                     DropdownMenuItem(value: 'hrd', child: Text('HRD')),
-                    DropdownMenuItem(
-                        value: 'kepala_cabang', child: Text('Kepala Cabang')),
+                    DropdownMenuItem(value: 'kepala_cabang', child: Text('Kepala Cabang')),
                   ],
                   onChanged: (value) {
                     setState(() {
@@ -430,8 +441,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                   );
                   return;
                 }
-                if (!RegExp(r'^[^@]+@[^@]+\.[^@]+')
-                    .hasMatch(emailController.text.trim())) {
+                if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(emailController.text.trim())) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Masukkan email yang valid')),
                   );
@@ -450,15 +460,13 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                 if (result['success'] == true) {
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('Karyawan berhasil diperbarui')),
+                    const SnackBar(content: Text('Karyawan berhasil diperbarui')),
                   );
                   await _loadUsers();
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                        content: Text(
-                            result['error'] ?? 'Gagal memperbarui karyawan')),
+                        content: Text(result['error'] ?? 'Gagal memperbarui karyawan')),
                   );
                 }
               },
@@ -474,8 +482,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
     );
   }
 
-  void _showDeleteConfirmationDialog(
-      BuildContext context, Map<String, dynamic> user) {
+  void _showDeleteConfirmationDialog(BuildContext context, Map<String, dynamic> user) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -488,8 +495,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
           ),
           ElevatedButton(
             onPressed: () async {
-              final authService =
-                  Provider.of<AuthService>(context, listen: false);
+              final authService = Provider.of<AuthService>(context, listen: false);
               final result = await authService.deleteUser(user['uid']);
               if (result['success'] == true) {
                 Navigator.pop(context);
@@ -499,9 +505,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                 await _loadUsers();
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                      content:
-                          Text(result['error'] ?? 'Gagal menghapus karyawan')),
+                  SnackBar(content: Text(result['error'] ?? 'Gagal menghapus karyawan')),
                 );
               }
             },
