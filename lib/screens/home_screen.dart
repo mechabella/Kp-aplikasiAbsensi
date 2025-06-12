@@ -1,3 +1,5 @@
+import 'package:absensi_app/screens/history_attendance_screen.dart';
+import 'package:absensi_app/screens/permission_management_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -100,7 +102,8 @@ class _HomeScreenState extends State<HomeScreen> {
       if (distance > maxDistance) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-              content: Text('Anda berada di luar lokasi absensi yang diizinkan')),
+              content:
+                  Text('Anda berada di luar lokasi absensi yang diizinkan')),
         );
         return false;
       }
@@ -228,7 +231,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
           ),
-          if (role == 'kepala_cabang' || role == 'hrd')
+          if (role == 'kepala_cabang')
             IconButton(
               icon: const Icon(Icons.people, color: Colors.white, size: 22),
               onPressed: () => Navigator.push(
@@ -256,6 +259,30 @@ class _HomeScreenState extends State<HomeScreen> {
                     builder: (context) => const PermissionHistoryScreen()),
               ),
               tooltip: 'Riwayat Pengajuan Izin',
+            ),
+          ],
+          if (role == 'hrd') ...[
+            IconButton(
+              icon: const Icon(Icons.note, color: Colors.white),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const PermissionManagementScreen()),
+                );
+              },
+              tooltip: 'Kelola Pengajuan Izin',
+            ),
+            IconButton(
+              icon: const Icon(Icons.history, color: Colors.white),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const HistoryAttendanceScreen()),
+                );
+              },
+              tooltip: 'Riwayat Absensi',
             ),
           ],
           IconButton(

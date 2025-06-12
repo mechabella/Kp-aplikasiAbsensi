@@ -143,9 +143,13 @@ class _PermissionManagementScreenState extends State<PermissionManagementScreen>
                             _filterStatus == 'All' || permission.status == _filterStatus)
                         .toList();
 
+
+
                     if (permissions.isEmpty) {
                       return const Center(child: Text('Tidak ada data untuk status ini'));
                     }
+
+                    print('Status izin: ${snapshot.data!.map((p) => p.status).toSet().toList()}');
 
                     return ListView.builder(
                       padding: const EdgeInsets.all(16.0),

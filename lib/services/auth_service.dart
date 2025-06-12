@@ -198,9 +198,9 @@ class AuthService {
     try {
       final snapshot = await _firestore
           .collection('izin')
-          .where('status', isEqualTo: 'Pending')
           .orderBy('submissionDate', descending: true)
           .get();
+
       return snapshot.docs
           .map((doc) => Permission.fromMap(doc.data(), doc.id))
           .toList();
