@@ -77,6 +77,7 @@ class _ClockInScreenState extends State<ClockInScreen> {
         }
       }
 
+
       permissionGranted = await location.hasPermission();
       if (permissionGranted == loc.PermissionStatus.denied) {
         permissionGranted = await location.requestPermission();

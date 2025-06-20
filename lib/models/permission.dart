@@ -15,6 +15,8 @@ class Permission {
   final String? reviewedBy;
   final String? reviewNotes;
 
+  static var storage;
+
   Permission({
     required this.id,
     required this.uid,
