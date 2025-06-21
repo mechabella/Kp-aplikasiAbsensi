@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-// import 'package:file_picker/file_picker.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/auth_service.dart';
 import '../models/permission.dart';
@@ -47,18 +47,18 @@ class _PermissionRequestScreenState extends State<PermissionRequestScreen> {
     }
   }
 
-  // Future<void> _pickFile() async {
-  //   FilePickerResult? result = await FilePicker.platform.pickFiles(
-  //     type: FileType.any,
-  //     allowMultiple: false,
-  //   );
-  //   if (result != null && result.files.single.path != null) {
-  //     setState(() {
-  //       _file = File(result.files.single.path!);
-  //       _fileName = result.files.single.name;
-  //     });
-  //   }
-  // }
+  Future<void> _pickFile() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.any,
+      allowMultiple: false,
+    );
+    if (result != null && result.files.single.path != null) {
+      setState(() {
+        _file = File(result.files.single.path!);
+        _fileName = result.files.single.name;
+      });
+    }
+  }
 
   Future<void> _submitPermission() async {
     if (!_formKey.currentState!.validate()) return;
@@ -251,14 +251,14 @@ class _PermissionRequestScreenState extends State<PermissionRequestScreen> {
                             style: const TextStyle(fontSize: 16),
                           ),
                         ),
-                        // ElevatedButton(
-                        //   onPressed: _pickFile,
-                        //   style: ElevatedButton.styleFrom(
-                        //     backgroundColor: const Color(0xFF001F54),
-                        //     foregroundColor: Colors.white,
-                        //   ),
-                        //   child: const Text('Pilih File'),
-                        // ),
+                        ElevatedButton(
+                          onPressed: _pickFile,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF001F54),
+                            foregroundColor: Colors.white,
+                          ),
+                          child: const Text('Pilih File'),
+                        ),
                       ],
                     ),
                     if (_file != null &&

@@ -97,11 +97,12 @@ class _HistoryAttendanceScreenState extends State<HistoryAttendanceScreen> {
     var excel = Excel.createExcel();
     Sheet sheet = excel['Riwayat Absensi & Izin'];
 
+    // Header row (baris 101-104)
     sheet.appendRow([
-      'Nama Karyawan',
-      'Tanggal',
-      'Status',
-      'Catatan',
+      TextCellValue('Nama Karyawan'),
+      TextCellValue('Tanggal'),
+      TextCellValue('Status'),
+      TextCellValue('Catatan'),
     ]);
 
     for (var item in combinedList) {
@@ -116,16 +117,17 @@ class _HistoryAttendanceScreenState extends State<HistoryAttendanceScreen> {
         notes = _getAttendanceNotes(item.timestamp, item.type);
       } else if (item is Permission) {
         status = 'Izin (${item.type})';
-        notes = item.status; // Gunakan status izin sebagai catatan
+        notes = item.status;
       }
 
+      // Data row (baris 125-128)
       sheet.appendRow([
-        user['nama'] ?? 'Unknown',
-        item is Attendance
+        TextCellValue(user['nama'] ?? 'Unknown'),
+        TextCellValue(item is Attendance
             ? DateFormat('dd MMMM yyyy, HH:mm').format(item.timestamp)
-            : '${DateFormat('dd MMMM yyyy').format(item.fromDate)} - ${DateFormat('dd MMMM yyyy').format(item.toDate)}',
-        status,
-        notes,
+            : '${DateFormat('dd MMMM yyyy').format(item.fromDate)} - ${DateFormat('dd MMMM yyyy').format(item.toDate)}'),
+        TextCellValue(status),
+        TextCellValue(notes),
       ]);
     }
 

@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:location/location.dart' as loc;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:intl/intl.dart';
 import 'package:image/image.dart' as img;
 import 'package:path_provider/path_provider.dart';
@@ -60,6 +61,14 @@ class _ClockInScreenState extends State<ClockInScreen> {
       _isLocationLoading = true;
     });
 
+    if (kIsWeb) {
+      setState(() {
+        _isLocationLoading = false;
+        _address = 'Fitur lokasi tidak tersedia di web';
+      });
+      return;
+    }
+
     loc.Location location = loc.Location();
     bool serviceEnabled;
     loc.PermissionStatus permissionGranted;
@@ -76,7 +85,6 @@ class _ClockInScreenState extends State<ClockInScreen> {
           return;
         }
       }
-
 
       permissionGranted = await location.hasPermission();
       if (permissionGranted == loc.PermissionStatus.denied) {
@@ -160,14 +168,11 @@ class _ClockInScreenState extends State<ClockInScreen> {
       final statusText = "Status: $_workStatus";
       print('Waktu: $timeString, Alamat: $locationString, Status: $statusText');
 
-      // Langkah 5: Gunakan Canvas untuk menggambar gambar dan teks
       final recorder = ui.PictureRecorder();
       final canvas = ui.Canvas(recorder);
 
-      // Gambar gambar asli
       canvas.drawImage(uiImage, Offset.zero, ui.Paint());
 
-      // Siapkan painter untuk teks
       TextPainter textPainter(String text, double fontSize, Color color,
           {int? maxLines}) {
         final painter = TextPainter(

@@ -580,7 +580,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   Icon(Icons.history, size: 20, color: Colors.blue),
                   SizedBox(width: 10),
                   Text(
-                    'Attendance History',
+                    'Attendance',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
