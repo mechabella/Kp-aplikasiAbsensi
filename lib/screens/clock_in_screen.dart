@@ -520,10 +520,6 @@ class _ClockInScreenState extends State<ClockInScreen> {
                               value: 'Work From Office',
                               child: Text('Work From Office'),
                             ),
-                            DropdownMenuItem(
-                              value: 'Work From Home',
-                              child: Text('Work From Home'),
-                            ),
                           ],
                           onChanged: (value) {
                             setState(() {

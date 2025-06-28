@@ -233,6 +233,8 @@ class AuthService {
 
   String _mapAuthError(String code) {
     switch (code) {
+      case 'invalid-credential':
+        return 'Login gagal, periksa Username dan password kembali';
       case 'user-not-found':
         return 'Pengguna tidak ditemukan.';
       case 'wrong-password':

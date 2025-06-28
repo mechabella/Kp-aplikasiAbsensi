@@ -36,7 +36,6 @@ class _HomeScreenState extends State<HomeScreen> {
     _scrollController.addListener(() {
       if (_scrollController.position.pixels ==
           _scrollController.position.maxScrollExtent) {
-        // Load more records when reaching the bottom
         setState(() {
           _displayCount += 5;
         });
@@ -55,7 +54,6 @@ class _HomeScreenState extends State<HomeScreen> {
       bool serviceEnabled;
       LocationPermission permission;
 
-      // Check if location services are enabled
       serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -64,7 +62,6 @@ class _HomeScreenState extends State<HomeScreen> {
         return false;
       }
 
-      // Check location permissions
       permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
@@ -83,17 +80,14 @@ class _HomeScreenState extends State<HomeScreen> {
         return false;
       }
 
-      // Get current position
       final position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
 
-      // Target location: -2.9836591445568796, 104.75457950303665
       const double targetLat = -2.9836591445568796;
       const double targetLon = 104.75457950303665;
       const double maxDistance = 100; // 100 meters
 
-      // Calculate distance
       final distance = Geolocator.distanceBetween(
         position.latitude,
         position.longitude,
@@ -104,8 +98,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (distance > maxDistance) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-              content:
-                  Text('Anda berada di luar lokasi absensi yang diizinkan')),
+              content: Text('Anda berada diluar lokasi yang diizinkan')),
         );
         return false;
       }
@@ -364,49 +357,49 @@ class _HomeScreenState extends State<HomeScreen> {
                 color: Colors.black,
               ),
             ),
-            const SizedBox(height: 16),
-            FutureBuilder<Map<String, bool>>(
-              future: _checkAttendanceStatus(uid),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const CircularProgressIndicator();
-                }
-                final hasClockedIn = snapshot.data?['hasClockedIn'] ?? false;
-                final hasClockedOut = snapshot.data?['hasClockedOut'] ?? false;
-                return Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      hasClockedIn ? Icons.check_circle : Icons.error_outline,
-                      color: hasClockedIn ? Colors.green : Colors.grey,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      hasClockedIn ? 'Clocked In' : 'Not Clocked In',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: hasClockedIn ? Colors.green : Colors.grey,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Icon(
-                      hasClockedOut ? Icons.check_circle : Icons.error_outline,
-                      color: hasClockedOut ? Colors.green : Colors.grey,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      hasClockedOut ? 'Clocked Out' : 'Not Clocked Out',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: hasClockedOut ? Colors.green : Colors.grey,
-                      ),
-                    ),
-                  ],
-                );
-              },
-            ),
+            // const SizedBox(height: 16),
+            // FutureBuilder<Map<String, bool>>(
+            //   future: _checkAttendanceStatus(uid),
+            //   builder: (context, snapshot) {
+            //     if (snapshot.connectionState == ConnectionState.waiting) {
+            //       return const CircularProgressIndicator();
+            //     }
+            //     final hasClockedIn = snapshot.data?['hasClockedIn'] ?? false;
+            //     final hasClockedOut = snapshot.data?['hasClockedOut'] ?? false;
+            //     return Row(
+            //       mainAxisAlignment: MainAxisAlignment.center,
+            //       children: [
+            //         Icon(
+            //           hasClockedIn ? Icons.check_circle : Icons.error_outline,
+            //           color: hasClockedIn ? Colors.green : Colors.grey,
+            //           size: 20,
+            //         ),
+            //         const SizedBox(width: 8),
+            //         Text(
+            //           hasClockedIn ? 'Clocked In' : 'Not Clocked In',
+            //           style: TextStyle(
+            //             fontSize: 14,
+            //             color: hasClockedIn ? Colors.green : Colors.grey,
+            //           ),
+            //         ),
+            //         const SizedBox(width: 16),
+            //         Icon(
+            //           hasClockedOut ? Icons.check_circle : Icons.error_outline,
+            //           color: hasClockedOut ? Colors.green : Colors.grey,
+            //           size: 20,
+            //         ),
+            //         const SizedBox(width: 8),
+            //         Text(
+            //           hasClockedOut ? 'Clocked Out' : 'Not Clocked Out',
+            //           style: TextStyle(
+            //             fontSize: 14,
+            //             color: hasClockedOut ? Colors.green : Colors.grey,
+            //           ),
+            //         ),
+            //       ],
+            //     );
+            //   },
+            // ),
             const SizedBox(height: 24),
             FutureBuilder<Map<String, bool>>(
               future: _checkAttendanceStatus(uid),
@@ -430,12 +423,12 @@ class _HomeScreenState extends State<HomeScreen> {
                             );
                             return;
                           }
-                          // Check location before allowing clock-in
                           final isInLocation = await _checkLocation();
                           if (!isInLocation) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text('Anda tidak berada di lokasi'),
+                                content: Text(
+                                    'Anda berada diluar lokasi yang diizinkan'),
                               ),
                             );
                             return;
@@ -485,12 +478,12 @@ class _HomeScreenState extends State<HomeScreen> {
                             );
                             return;
                           }
-                          // Check location before allowing clock-out
                           final isInLocation = await _checkLocation();
                           if (!isInLocation) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text('Anda tidak berada di lokasi'),
+                                content: Text(
+                                    'Anda berada diluar lokasi yang diizinkan'),
                               ),
                             );
                             return;
@@ -571,14 +564,13 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header with Filter
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Row(
                 children: [
-                  Icon(Icons.history, size: 20, color: Colors.blue),
-                  SizedBox(width: 10),
+                  // Icon(Icons.history, size: 20, color: Colors.blue),
+                  SizedBox(width: 2),
                   Text(
                     'Attendance',
                     style: TextStyle(
@@ -604,7 +596,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     onChanged: (value) {
                       setState(() {
                         _filter = value!;
-                        _displayCount = 5; // Reset pagination on filter change
+                        _displayCount = 5;
                       });
                     },
                   ),
@@ -612,7 +604,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     icon:
                         const Icon(Icons.refresh, size: 20, color: Colors.blue),
                     onPressed: () => setState(() {
-                      _displayCount = 5; // Reset pagination on refresh
+                      _displayCount = 5;
                     }),
                     tooltip: 'Refresh Riwayat',
                   ),
@@ -621,8 +613,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
           const SizedBox(height: 16),
-
-          // Attendance & Permission List
           FutureBuilder<List<dynamic>>(
             future: _fetchCombinedHistory(authService, uid),
             builder: (context, snapshot) {
@@ -659,15 +649,15 @@ class _HomeScreenState extends State<HomeScreen> {
               final combinedHistory = snapshot.data!;
               final filteredHistory = combinedHistory.where((item) {
                 if (item is Attendance) {
-                  final clockIn = item.timestamp;
-                  final isLate = _isLate(clockIn);
-                  final isEarlyOut =
-                      _isEarlyOut(null); // Adjust if clock-out needed
-                  if (_filter == 'Late') return isLate;
-                  if (_filter == 'Early Out') return isEarlyOut;
-                  return _filter == 'All' || _filter == 'Permission';
+                  if (_filter == 'Late' && item.type == 'clock_in') {
+                    return _isLate(item.timestamp);
+                  }
+                  if (_filter == 'Early Out' && item.type == 'clock_out') {
+                    return _isEarlyOut(item.timestamp);
+                  }
+                  return _filter == 'All';
                 } else if (item is Permission) {
-                  return _filter == 'All' || _filter == 'Permission';
+                  return _filter == 'Permission' || _filter == 'All';
                 }
                 return false;
               }).toList();
@@ -699,8 +689,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   if (item is Attendance) {
                     final dateKey =
                         DateFormat('yyyy-MM-dd').format(item.timestamp);
-                    final isLate = _isLate(item.timestamp);
-                    final hasIssue = isLate;
+                    final isLate =
+                        item.type == 'clock_in' && _isLate(item.timestamp);
+                    final isEarlyOut =
+                        item.type == 'clock_out' && _isEarlyOut(item.timestamp);
+                    final hasIssue = isLate || isEarlyOut;
                     return Container(
                       decoration: BoxDecoration(
                         color: hasIssue
@@ -763,6 +756,18 @@ class _HomeScreenState extends State<HomeScreen> {
                                         : Colors.black87,
                                   ),
                                 ),
+                                if (isLate)
+                                  const Text(
+                                    'Terlambat',
+                                    style: TextStyle(
+                                        fontSize: 12, color: Colors.red),
+                                  ),
+                                if (isEarlyOut)
+                                  const Text(
+                                    'Pulang Cepat',
+                                    style: TextStyle(
+                                        fontSize: 12, color: Colors.red),
+                                  ),
                               ],
                             ),
                           ),
@@ -894,11 +899,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
   bool _isLate(DateTime? clockIn) {
     if (clockIn == null) return false;
-    return clockIn.hour >= 8 && clockIn.minute > 0;
+    return clockIn.hour > 8 || (clockIn.hour == 8 && clockIn.minute > 0);
   }
 
   bool _isEarlyOut(DateTime? clockOut) {
     if (clockOut == null) return false;
-    return clockOut.hour < 17 || (clockOut.hour == 17 && clockOut.minute == 0);
+    return clockOut.hour < 17 || (clockOut.hour == 17 && clockOut.minute < 0);
   }
 }

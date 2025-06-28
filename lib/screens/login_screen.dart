@@ -33,12 +33,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
     // Basic validation
     if (_emailController.text.trim().isEmpty) {
-      setState(() => _emailError = 'Username cannot be empty');
+      setState(() => _emailError = 'Username/Email Perlu diisi');
       return;
     }
 
     if (_passwordController.text.trim().isEmpty) {
-      setState(() => _passwordError = 'Password cannot be empty');
+      setState(() => _passwordError = 'Password perlu diisi');
       return;
     }
   }
@@ -383,28 +383,28 @@ class _LoginScreenState extends State<LoginScreen> {
                         ],
                       ),
                       // Forgot Password
-                      TextButton(
-                        onPressed: () {
-                          // TODO: Implementasi Forget Password
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text('Forget Password (coming soon)')),
-                          );
-                        },
-                        style: TextButton.styleFrom(
-                          padding: EdgeInsets.zero,
-                          minimumSize: const Size(10, 10),
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                        child: const Text(
-                          'Forgot Password',
-                          style: TextStyle(
-                            color: Color(0xFF001F54),
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
+                      // TextButton(
+                      //   onPressed: () {
+                      //     // TODO: Implementasi Forget Password
+                      //     ScaffoldMessenger.of(context).showSnackBar(
+                      //       const SnackBar(
+                      //           content: Text('Forget Password (coming soon)')),
+                      //     );
+                      //   },
+                      //   style: TextButton.styleFrom(
+                      //     padding: EdgeInsets.zero,
+                      //     minimumSize: const Size(10, 10),
+                      //     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      //   ),
+                      //   child: const Text(
+                      //     'Forgot Password',
+                      //     style: TextStyle(
+                      //       color: Color(0xFF001F54),
+                      //       fontSize: 12,
+                      //       fontWeight: FontWeight.w500,
+                      //     ),
+                      //   ),
+                      // ),
                     ],
                   ),
 
