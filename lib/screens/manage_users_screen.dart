@@ -145,7 +145,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                                   ),
                                   icon: const Icon(Icons.add),
                                   label: const Text(
-                                    'Tambah Karyawan',
+                                    'Tambah User',
                                     style: TextStyle(fontSize: 16),
                                   ),
                                 ),
@@ -202,7 +202,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (dialogContext, setState) => AlertDialog(
-          title: const Text('Tambah Karyawan Baru'),
+          title: const Text('Tambah User Baru'),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -359,7 +359,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          title: const Text('Edit Karyawan'),
+          title: const Text('Edit User'),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,

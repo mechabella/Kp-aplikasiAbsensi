@@ -3,7 +3,11 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:excel/excel.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart' as perm;
+import 'package:universal_io/io.dart' show Platform;
+import 'package:share_plus/share_plus.dart';
 import 'dart:io';
+import 'dart:typed_data';
 import '../services/auth_service.dart';
 import '../models/attendance.dart';
 import '../models/permission.dart';
@@ -18,7 +22,7 @@ class HistoryAttendanceScreen extends StatefulWidget {
 
 class _HistoryAttendanceScreenState extends State<HistoryAttendanceScreen> {
   List<Attendance> _attendanceList = [];
-  List<Permission> _permissionList = []; // Tambahkan list untuk izin
+  List<Permission> _permissionList = [];
   List<Map<String, dynamic>> _users = [];
   String _selectedUser = 'All';
   DateTime? _startDate;
@@ -42,8 +46,7 @@ class _HistoryAttendanceScreenState extends State<HistoryAttendanceScreen> {
     try {
       final users = await authService.getAllUsers();
       final attendance = await authService.getAllAttendance();
-      final permissions =
-          await authService.getAllPermissions(); // Asumsikan ada metode ini
+      final permissions = await authService.getAllPermissions();
       setState(() {
         _users = users;
         _attendanceList = attendance;
@@ -93,69 +96,251 @@ class _HistoryAttendanceScreenState extends State<HistoryAttendanceScreen> {
     });
   }
 
-  Future<void> _exportToExcel(List<dynamic> combinedList, String type) async {
-    var excel = Excel.createExcel();
-    Sheet sheet = excel['Riwayat Absensi & Izin'];
-
-    // Header row (baris 101-104)
-    sheet.appendRow([
-      TextCellValue('Nama Karyawan'),
-      TextCellValue('Tanggal'),
-      TextCellValue('Status'),
-      TextCellValue('Catatan'),
-    ]);
-
-    for (var item in combinedList) {
-      final user = _users.firstWhere(
-          (u) => u['uid'] == (item is Attendance ? item.uid : item.uid),
-          orElse: () => {'nama': 'Unknown'});
-      String status = '';
-      String notes = '';
-
-      if (item is Attendance) {
-        status = item.type == 'clock_in' ? 'Masuk' : 'Keluar';
-        notes = _getAttendanceNotes(item.timestamp, item.type);
-      } else if (item is Permission) {
-        status = 'Izin (${item.type})';
-        notes = item.status;
+  // Method untuk request storage permission yang lebih komprehensif
+  Future<bool> _requestStoragePermission() async {
+    if (Platform.isAndroid) {
+      // Untuk Android 11+ (API 30+)
+      if (await perm.Permission.manageExternalStorage.isGranted) {
+        return true;
       }
-
-      // Data row (baris 125-128)
-      sheet.appendRow([
-        TextCellValue(user['nama'] ?? 'Unknown'),
-        TextCellValue(item is Attendance
-            ? DateFormat('dd MMMM yyyy, HH:mm').format(item.timestamp)
-            : '${DateFormat('dd MMMM yyyy').format(item.fromDate)} - ${DateFormat('dd MMMM yyyy').format(item.toDate)}'),
-        TextCellValue(status),
-        TextCellValue(notes),
-      ]);
+      
+      // Request manage external storage permission
+      final status = await perm.Permission.manageExternalStorage.request();
+      if (status.isGranted) {
+        return true;
+      }
+      
+      // Fallback ke storage permission biasa
+      final storageStatus = await perm.Permission.storage.request();
+      return storageStatus.isGranted;
     }
+    
+    return true; // iOS tidak memerlukan permission khusus
+  }
 
-    var fileBytes = excel.save();
-    if (fileBytes == null) return;
-
-    final directory = await getExternalStorageDirectory();
-    if (directory == null) {
+  // Method tambahan untuk memindahkan file ke Download folder
+  Future<void> _moveToDownloadFolder(File sourceFile, String fileName) async {
+    try {
+      // Minta permission storage
+      bool hasPermission = await _requestStoragePermission();
+      
+      if (hasPermission) {
+        // Coba beberapa lokasi Download yang mungkin
+        List<String> possibleDownloadPaths = [
+          '/storage/emulated/0/Download',
+          '/sdcard/Download',
+          '/storage/sdcard0/Download',
+        ];
+        
+        for (String downloadPath in possibleDownloadPaths) {
+          try {
+            final Directory downloadDir = Directory(downloadPath);
+            if (await downloadDir.exists()) {
+              final File targetFile = File('$downloadPath/$fileName');
+              
+              // Copy file ke Download folder
+              await sourceFile.copy(targetFile.path);
+              
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('File berhasil dipindah ke: ${targetFile.path}')),
+              );
+              return;
+            }
+          } catch (e) {
+            print('Failed to copy to $downloadPath: $e');
+            continue;
+          }
+        }
+      }
+      
+      // Jika gagal, bagikan file
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text('Gagal mendapatkan direktori penyimpanan')),
+          content: Text('Tidak dapat memindah ke folder Download. File tetap tersimpan di aplikasi.'),
+        ),
       );
-      return;
+      
+    } catch (e) {
+      print('Error moving file: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Gagal memindahkan file')),
+      );
     }
+  }
 
-    final fileName =
-        'riwayat_absensi_izin_${type}_${DateTime.now().toIso8601String()}.xlsx';
-    final file = File('${directory.path}/$fileName');
-    await file.writeAsBytes(fileBytes);
+  Future<void> _exportToExcel(List<dynamic> combinedList, String type) async {
+    try {
+      var excel = Excel.createExcel();
+      Sheet sheet = excel['Riwayat Absensi & Izin'];
 
-    if (await Permission.storage.request().isGranted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('File disimpan di: ${file.path}')),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Izin penyimpanan ditolak')),
-      );
+      // Header row
+      sheet.appendRow([
+        TextCellValue('Nama Karyawan'),
+        TextCellValue('Tanggal'),
+        TextCellValue('Status'),
+        TextCellValue('Catatan'),
+      ]);
+
+      // Data rows
+      for (var item in combinedList) {
+        final user = _users.firstWhere(
+            (u) => u['uid'] == (item is Attendance ? item.uid : item.uid),
+            orElse: () => {'nama': 'Unknown'});
+        String status = '';
+        String notes = '';
+
+        if (item is Attendance) {
+          status = item.type == 'clock_in' ? 'Masuk' : 'Keluar';
+          notes = _getAttendanceNotes(item.timestamp, item.type);
+        } else if (item is Permission) {
+          status = 'Izin (${item.type})';
+          notes = item.status;
+        }
+
+        sheet.appendRow([
+          TextCellValue(user['nama'] ?? 'Unknown'),
+          TextCellValue(item is Attendance
+              ? DateFormat('dd MMMM yyyy, HH:mm').format(item.timestamp)
+              : '${DateFormat('dd MMMM yyyy').format(item.fromDate)} - ${DateFormat('dd MMMM yyyy').format(item.toDate)}'),
+          TextCellValue(status),
+          TextCellValue(notes),
+        ]);
+      }
+
+      Uint8List? fileBytes = excel.save() != null ? Uint8List.fromList(excel.save()!) : null;
+      if (fileBytes == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Gagal menghasilkan file Excel')),
+        );
+        return;
+      }
+
+      final baseFileName = 'riwayat_absensi_izin_${type}_${DateFormat('yyyyMMdd_HHmmss').format(DateTime.now())}';
+      String fileName = '$baseFileName.xlsx';
+
+      try {
+        // SOLUSI 1: Gunakan SAF (Storage Access Framework) untuk Android 11+
+        if (Platform.isAndroid) {
+          // Coba simpan di direktori app terlebih dahulu
+          final Directory? appDir = await getExternalStorageDirectory();
+          if (appDir != null) {
+            final Directory downloadDir = Directory('${appDir.path}/Downloads');
+            if (!await downloadDir.exists()) {
+              await downloadDir.create(recursive: true);
+            }
+            
+            // Pastikan nama file unik
+            File file = File('${downloadDir.path}/$fileName');
+            int suffix = 1;
+            while (await file.exists()) {
+              fileName = '${baseFileName}_$suffix.xlsx';
+              file = File('${downloadDir.path}/$fileName');
+              suffix++;
+            }
+
+            await file.writeAsBytes(fileBytes);
+
+            // Tampilkan dialog pilihan
+            if (mounted) {
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('File Berhasil Disimpan'),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('File disimpan di:\n${file.path}'),
+                      const SizedBox(height: 16),
+                      const Text('Pilih tindakan:'),
+                    ],
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Tutup'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        // Bagikan file menggunakan share_plus
+                        Share.shareXFiles([XFile(file.path)], text: 'Riwayat Absensi & Izin');
+                      },
+                      child: const Text('Bagikan'),
+                    ),
+                    if (Platform.isAndroid)
+                      TextButton(
+                        onPressed: () async {
+                          Navigator.pop(context);
+                          // Coba pindahkan ke Download folder menggunakan file manager
+                          await _moveToDownloadFolder(file, fileName);
+                        },
+                        child: const Text('Pindah ke Download'),
+                      ),
+                  ],
+                ),
+              );
+            }
+
+            return;
+          }
+        }
+
+        // SOLUSI 2: Untuk iOS atau fallback
+        final Directory? documentsDir = await getApplicationDocumentsDirectory();
+        if (documentsDir != null) {
+          File file = File('${documentsDir.path}/$fileName');
+          int suffix = 1;
+          while (await file.exists()) {
+            fileName = '${baseFileName}_$suffix.xlsx';
+            file = File('${documentsDir.path}/$fileName');
+            suffix++;
+          }
+
+          await file.writeAsBytes(fileBytes);
+          
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('File disimpan di: ${file.path}'),
+                action: SnackBarAction(
+                  label: 'Bagikan',
+                  onPressed: () {
+                    Share.shareXFiles([XFile(file.path)], text: 'Riwayat Absensi & Izin');
+                  },
+                ),
+              ),
+            );
+          }
+        }
+
+      } catch (e) {
+        // SOLUSI 3: Jika gagal menyimpan, langsung bagikan file
+        print('Error saving file: $e');
+        
+        // Simpan di temporary directory dan bagikan
+        final Directory tempDir = await getTemporaryDirectory();
+        final File tempFile = File('${tempDir.path}/$fileName');
+        await tempFile.writeAsBytes(fileBytes);
+        
+        await Share.shareXFiles([XFile(tempFile.path)], text: 'Riwayat Absensi & Izin');
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('File dibagikan karena tidak dapat menyimpan ke storage publik'),
+            ),
+          );
+        }
+      }
+
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal meneksport file: $e')),
+        );
+      }
+      print('Export error details: $e');
     }
   }
 
@@ -219,65 +404,94 @@ class _HistoryAttendanceScreenState extends State<HistoryAttendanceScreen> {
                 content: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    ElevatedButton(
-                      onPressed: () {
-                        final combinedData = _filterCombinedData();
-                        if (combinedData.isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text('Tidak ada data untuk diekspor')),
-                          );
-                          return;
-                        }
-                        _exportToExcel(combinedData, 'filtered');
-                        Navigator.pop(context);
-                      },
-                      child: const Text('Data Terfilter'),
-                    ),
-                    if (_selectedUser != 'All')
-                      ElevatedButton(
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
                         onPressed: () {
-                          final userData = [
-                            ..._attendanceList
-                                .where((a) => a.uid == _selectedUser)
-                                .toList(),
-                            ..._permissionList
-                                .where((p) => p.uid == _selectedUser)
-                                .toList(),
-                          ];
-                          if (userData.isEmpty) {
+                          final combinedData = _filterCombinedData();
+                          if (combinedData.isEmpty) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                  content:
-                                      Text('Tidak ada data untuk user ini')),
+                                  content: Text('Tidak ada data untuk diekspor')),
                             );
                             return;
                           }
-                          _exportToExcel(userData, 'user_${_selectedUser}');
+                          _exportToExcel(combinedData, 'filtered');
                           Navigator.pop(context);
                         },
-                        child: const Text('Semua Data User Ini'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF001F54),
+                          foregroundColor: Colors.white,
+                        ),
+                        child: const Text('Data Terfilter'),
                       ),
-                    ElevatedButton(
-                      onPressed: () {
-                        final combinedData = [
-                          ..._attendanceList,
-                          ..._permissionList
-                        ];
-                        if (combinedData.isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text('Tidak ada data untuk diekspor')),
-                          );
-                          return;
-                        }
-                        _exportToExcel(combinedData, 'semua');
-                        Navigator.pop(context);
-                      },
-                      child: const Text('Semua Data'),
+                    ),
+                    const SizedBox(height: 8),
+                    if (_selectedUser != 'All')
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            final userData = [
+                              ..._attendanceList
+                                  .where((a) => a.uid == _selectedUser)
+                                  .toList(),
+                              ..._permissionList
+                                  .where((p) => p.uid == _selectedUser)
+                                  .toList(),
+                            ];
+                            if (userData.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content:
+                                        Text('Tidak ada data untuk user ini')),
+                              );
+                              return;
+                            }
+                            _exportToExcel(userData, 'user_${_selectedUser}');
+                            Navigator.pop(context);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                            foregroundColor: Colors.white,
+                          ),
+                          child: const Text('Semua Data User Ini'),
+                        ),
+                      ),
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          final combinedData = [
+                            ..._attendanceList,
+                            ..._permissionList
+                          ];
+                          if (combinedData.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text('Tidak ada data untuk diekspor')),
+                            );
+                            return;
+                          }
+                          _exportToExcel(combinedData, 'semua');
+                          Navigator.pop(context);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          foregroundColor: Colors.white,
+                        ),
+                        child: const Text('Semua Data'),
+                      ),
                     ),
                   ],
                 ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Batal'),
+                  ),
+                ],
               ),
             ),
           ),
@@ -500,7 +714,9 @@ class _HistoryAttendanceScreenState extends State<HistoryAttendanceScreen> {
                                                   ),
                                                   child: Text(
                                                     item is Attendance
-                                                        ? item.type
+                                                        ? item.type == 'clock_in'
+                                                            ? 'Masuk'
+                                                            : 'Keluar'
                                                         : 'Izin (${item.type})',
                                                     style: TextStyle(
                                                       fontSize: 12,

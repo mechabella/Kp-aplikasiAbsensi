@@ -14,7 +14,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   bool _isLoading = false;
   bool _obscurePassword = true;
-  bool _rememberMe = false;
+  // bool _rememberMe = false;
   String? _emailError;
   String? _passwordError;
 
@@ -352,61 +352,61 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 15),
 
                   // Remember me and Forgot Password
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      // Remember me
-                      Row(
-                        children: [
-                          SizedBox(
-                            height: 24,
-                            width: 24,
-                            child: Checkbox(
-                              value: _rememberMe,
-                              onChanged: (value) {
-                                setState(() => _rememberMe = value ?? false);
-                              },
-                              activeColor: const Color(0xFF001F54),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          const Text(
-                            'Remember me',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey,
-                            ),
-                          ),
-                        ],
-                      ),
-                      // Forgot Password
-                      // TextButton(
-                      //   onPressed: () {
-                      //     // TODO: Implementasi Forget Password
-                      //     ScaffoldMessenger.of(context).showSnackBar(
-                      //       const SnackBar(
-                      //           content: Text('Forget Password (coming soon)')),
-                      //     );
-                      //   },
-                      //   style: TextButton.styleFrom(
-                      //     padding: EdgeInsets.zero,
-                      //     minimumSize: const Size(10, 10),
-                      //     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      //   ),
-                      //   child: const Text(
-                      //     'Forgot Password',
-                      //     style: TextStyle(
-                      //       color: Color(0xFF001F54),
-                      //       fontSize: 12,
-                      //       fontWeight: FontWeight.w500,
-                      //     ),
-                      //   ),
-                      // ),
-                    ],
-                  ),
+                  // Row(
+                  //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  //   children: [
+                  //     // Remember me
+                  //     Row(
+                  //       children: [
+                  //         SizedBox(
+                  //           height: 24,
+                  //           width: 24,
+                  //           child: Checkbox(
+                  //             value: _rememberMe,
+                  //             onChanged: (value) {
+                  //               setState(() => _rememberMe = value ?? false);
+                  //             },
+                  //             activeColor: const Color(0xFF001F54),
+                  //             shape: RoundedRectangleBorder(
+                  //               borderRadius: BorderRadius.circular(4),
+                  //             ),
+                  //           ),
+                  //         ),
+                  //         const SizedBox(width: 8),
+                  //         const Text(
+                  //           'Remember me',
+                  //           style: TextStyle(
+                  //             fontSize: 12,
+                  //             color: Colors.grey,
+                  //           ),
+                  //         ),
+                  //       ],
+                  //     ),
+                  //     // Forgot Password
+                  //     // TextButton(
+                  //     //   onPressed: () {
+                  //     //     // TODO: Implementasi Forget Password
+                  //     //     ScaffoldMessenger.of(context).showSnackBar(
+                  //     //       const SnackBar(
+                  //     //           content: Text('Forget Password (coming soon)')),
+                  //     //     );
+                  //     //   },
+                  //     //   style: TextButton.styleFrom(
+                  //     //     padding: EdgeInsets.zero,
+                  //     //     minimumSize: const Size(10, 10),
+                  //     //     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  //     //   ),
+                  //     //   child: const Text(
+                  //     //     'Forgot Password',
+                  //     //     style: TextStyle(
+                  //     //       color: Color(0xFF001F54),
+                  //     //       fontSize: 12,
+                  //     //       fontWeight: FontWeight.w500,
+                  //     //     ),
+                  //     //   ),
+                  //     // ),
+                  //   ],
+                  // ),
 
                   const SizedBox(height: 25),
 
