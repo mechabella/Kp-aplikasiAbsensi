@@ -30,14 +30,23 @@ class _HomeScreenState extends State<HomeScreen> {
   List<dynamic> _allHistory =
       []; // Store combined attendance and permission data
 
+  bool _isLoading = false;
+
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(() {
       if (_scrollController.position.pixels ==
-          _scrollController.position.maxScrollExtent) {
+              _scrollController.position.maxScrollExtent &&
+          !_isLoading) {
         setState(() {
-          _displayCount += 5;
+          _isLoading = true;
+          if (_displayCount < _allHistory.length) {
+            _displayCount += 5;
+          }
+        });
+        Future.delayed(const Duration(milliseconds: 500), () {
+          _isLoading = false;
         });
       }
     });
@@ -569,7 +578,6 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               const Row(
                 children: [
-                  // Icon(Icons.history, size: 20, color: Colors.blue),
                   SizedBox(width: 2),
                   Text(
                     'Attendance',
@@ -596,7 +604,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     onChanged: (value) {
                       setState(() {
                         _filter = value!;
-                        _displayCount = 5;
+                        _displayCount = 5; // Reset display count
+                        _allHistory.clear(); // Clear cached history
                       });
                     },
                   ),
@@ -604,7 +613,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     icon:
                         const Icon(Icons.refresh, size: 20, color: Colors.blue),
                     onPressed: () => setState(() {
-                      _displayCount = 5;
+                      _displayCount = 5; // Reset display count
+                      _allHistory.clear(); // Clear cached history
                     }),
                     tooltip: 'Refresh Riwayat',
                   ),
@@ -667,25 +677,18 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Text('Tidak ada data untuk status ini'));
               }
 
+              // Limit the number of displayed items to _displayCount or filteredHistory.length
+              final displayItems = filteredHistory.take(_displayCount).toList();
+
               return ListView.separated(
                 controller: _scrollController,
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                itemCount: filteredHistory.length +
-                    (filteredHistory.length < combinedHistory.length ? 1 : 0),
+                itemCount: displayItems.length,
                 separatorBuilder: (context, index) =>
                     const SizedBox(height: 10),
                 itemBuilder: (context, index) {
-                  if (index == filteredHistory.length) {
-                    return const Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(20.0),
-                        child: CircularProgressIndicator(),
-                      ),
-                    );
-                  }
-
-                  final item = filteredHistory[index];
+                  final item = displayItems[index];
                   if (item is Attendance) {
                     final dateKey =
                         DateFormat('yyyy-MM-dd').format(item.timestamp);
