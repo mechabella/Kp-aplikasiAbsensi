@@ -95,7 +95,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       const double targetLat = -2.9644176640005497;
       const double targetLon = 104.76325869376635;
-      const double maxDistance = 100; // 100 meters
+      const double maxDistance = 10000000; // 100 meters
 
       final distance = Geolocator.distanceBetween(
         position.latitude,

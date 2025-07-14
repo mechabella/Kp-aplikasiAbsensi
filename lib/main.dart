@@ -29,6 +29,7 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
         title: 'Absensi App',
+        debugShowCheckedModeBanner: false,
         theme: ThemeData(
           primarySwatch: Colors.blue,
           useMaterial3: true,

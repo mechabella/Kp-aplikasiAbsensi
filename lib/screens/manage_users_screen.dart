@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../services/auth_service.dart';
 import 'permission_management_screen.dart';
 import 'history_attendance_screen.dart';
@@ -17,6 +18,7 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
   String? errorMessage;
   final user = FirebaseAuth.instance.currentUser;
   bool _isLoading = true;
+  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
 
   @override
   void initState() {
@@ -322,11 +324,33 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
                 );
 
                 if (result['success'] == true) {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Karyawan berhasil ditambahkan')),
-                  );
-                  await _loadUsers();
+                  if (result['requiresLogin'] == true) {
+                    final adminEmail = result['adminEmail'];
+                    final adminPassword = await _showAdminPasswordDialog(context, adminEmail);
+                    if (adminPassword != null) {
+                      try {
+                        await FirebaseAuth.instance.signInWithEmailAndPassword(
+                          email: adminEmail,
+                          password: adminPassword,
+                        );
+                        Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Karyawan berhasil ditambahkan, login ulang sukses')),
+                        );
+                        await _loadUsers();
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Gagal login ulang: $e')),
+                        );
+                      }
+                    }
+                  } else {
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Karyawan berhasil ditambahkan')),
+                    );
+                    await _loadUsers();
+                  }
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -343,6 +367,45 @@ class _ManageUsersScreenState extends State<ManageUsersScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Future<String?> _showAdminPasswordDialog(BuildContext context, String adminEmail) async {
+    String? password;
+    return showDialog<String>(
+      context: context,
+      barrierDismissible: false, // Mencegah penutupan dialog tanpa aksi
+      builder: (context) => AlertDialog(
+        title: const Text('Masukkan Password Admin'),
+        content: TextField(
+          obscureText: true,
+          decoration: InputDecoration(
+            labelText: 'Password untuk $adminEmail',
+            errorText: password != null && password!.isEmpty ? 'Password tidak boleh kosong' : null,
+          ),
+          onChanged: (value) => password = value,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, null),
+            child: const Text('Batal'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (password != null && password!.isNotEmpty) {
+                Navigator.pop(context, password);
+              } else {
+                setState(() {}); // Memperbarui state untuk menampilkan error
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF001F54),
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Login'),
+          ),
+        ],
       ),
     );
   }

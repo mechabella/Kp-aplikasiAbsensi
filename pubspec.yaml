@@ -50,11 +50,12 @@ dependencies:
   permission_handler: ^12.0.0+1
   geolocator: ^14.0.1
   file_picker: ^10.2.0
-  js: ^0.7.1
+  js: ^0.6.7
   csv: ^5.0.2
   share_plus: ^7.2.1
   universal_io: ^2.2.2
   location: ^8.0.0  # Pastikan versi terbaru
+  flutter_secure_storage: ^9.0.0
   
 
 

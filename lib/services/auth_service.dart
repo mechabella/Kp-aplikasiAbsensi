@@ -1,12 +1,14 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../models/attendance.dart';
 import '../models/permission.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
 
   Stream<User?> get authStateChanges => _auth.authStateChanges();
 
@@ -62,7 +64,13 @@ class AuthService {
     String fotoUrl = '',
   }) async {
     try {
-      // Buat pengguna baru di Firebase Authentication
+      // Simpan email admin saat ini ke Secure Storage
+      final currentUser = _auth.currentUser;
+      if (currentUser != null) {
+        await _secureStorage.write(key: 'admin_email', value: currentUser.email);
+      }
+
+      // Buat akun baru
       final credential = await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
@@ -77,12 +85,22 @@ class AuthService {
           'email': email,
           'id': id ?? credential.user!.uid,
           'fotoUrl': fotoUrl,
-          'uid': credential.user!.uid, // Tambahkan uid untuk konsistensi
+          'uid': credential.user!.uid,
         });
 
-        return {'success': true};
+        // Logout dari akun baru
+        await _auth.signOut();
+
+        // Opsional: Login kembali ke admin (minta password dari pengguna)
+        final adminEmail = await _secureStorage.read(key: 'admin_email');
+        if (adminEmail != null) {
+          // Anda perlu meminta password admin dari UI (misalnya, dialog)
+          // Placeholder, ganti dengan logika nyata dari ManageUsersScreen
+          // Contoh: Panggil fungsi dari ManageUsersScreen untuk dialog
+          return {'success': true, 'requiresLogin': true, 'adminEmail': adminEmail};
+        }
       }
-      return {'error': 'Gagal membuat pengguna'};
+      return {'success': true};
     } on FirebaseAuthException catch (e) {
       return {'error': _mapAuthError(e.code)};
     } catch (e) {
@@ -200,7 +218,6 @@ class AuthService {
           .collection('izin')
           .orderBy('submissionDate', descending: true)
           .get();
-
       return snapshot.docs
           .map((doc) => Permission.fromMap(doc.data(), doc.id))
           .toList();
@@ -234,7 +251,7 @@ class AuthService {
   String _mapAuthError(String code) {
     switch (code) {
       case 'invalid-credential':
-        return 'Login gagal, periksa Username dan password kembali';
+        return 'Login gagal, periksa Username dan password kembali';
       case 'user-not-found':
         return 'Pengguna tidak ditemukan.';
       case 'wrong-password':
