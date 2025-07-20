@@ -14,7 +14,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   bool _isLoading = false;
   bool _obscurePassword = true;
-  // bool _rememberMe = false;
   String? _emailError;
   String? _passwordError;
 
@@ -31,7 +30,6 @@ class _LoginScreenState extends State<LoginScreen> {
       _passwordError = null;
     });
 
-    // Basic validation
     if (_emailController.text.trim().isEmpty) {
       setState(() => _emailError = 'Username/Email Perlu diisi');
       return;
@@ -44,13 +42,11 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _login() async {
-    // Clear previous errors
     setState(() {
       _emailError = null;
       _passwordError = null;
     });
 
-    // Validate inputs first
     _validateInputs();
     if (_emailError != null || _passwordError != null) {
       return;
@@ -72,7 +68,6 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _handleAuthError(String errorMessage) {
-    // Map common error messages to more user-friendly messages
     String displayMessage = errorMessage;
     
     if (errorMessage.contains('user-not-found') || 
@@ -103,7 +98,6 @@ class _LoginScreenState extends State<LoginScreen> {
       );
     }
     else {
-      // For any other errors, show a dialog with the error message
       _showErrorDialog('Login Failed', displayMessage);
     }
   }
@@ -136,28 +130,79 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  void _showEmergencyContactDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text(
+          'Emergency Contact',
+          style: TextStyle(
+            color: Color(0xFF001F54),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'For immediate assistance, please contact:',
+              style: TextStyle(fontSize: 14),
+            ),
+            SizedBox(height: 10),
+            Text(
+              'Bella : +62 821-8643-3442',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF001F54),
+              ),
+            ),
+            Text(
+              'Nilam : +62 819-9700-7438',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF001F54),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              'Close',
+              style: TextStyle(color: Color.fromARGB(255, 72, 115, 189)),
+            ),
+          ),
+        ],
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     return Scaffold(
       body: Stack(
         children: [
-          // Base blue background
           Container(
             width: size.width,
             height: size.height,
-            color: const Color(0xFF001F54), // Dark navy blue
+            color: const Color(0xFF001F54),
           ),
-          // Yellow curved background
           ClipPath(
             clipper: WaveClipper(),
             child: Container(
               width: size.width,
-              height: size.height * 0.3, // Cover ~35% of screen height
-              color: const Color(0xFFFFE600), // Bright yellow
+              height: size.height * 0.3,
+              color: const Color(0xFFFFE600),
             ),
           ),
-          // Status bar area (to match the image's rounded corners at top)
           Positioned(
             top: 0,
             left: 0,
@@ -165,7 +210,7 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Container(
               height: 30,
               decoration: const BoxDecoration(
-                color: Color(0xFFFFE600), // Yellow
+                color: Color(0xFFFFE600),
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(12),
                   topRight: Radius.circular(12),
@@ -173,7 +218,6 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
           ),
-          // Logo
           Positioned(
             top: size.height * 0.07,
             left: 0,
@@ -186,7 +230,6 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
           ),
-          // Welcome text
           Positioned(
             top: size.height * 0.32,
             left: 0,
@@ -212,7 +255,6 @@ class _LoginScreenState extends State<LoginScreen> {
               ],
             ),
           ),
-          // Login card
           Positioned(
             top: size.height * 0.43,
             left: 20,
@@ -233,7 +275,6 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Username field
                   const Text(
                     'Username',
                     style: TextStyle(
@@ -283,10 +324,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       }
                     },
                   ),
-
                   const SizedBox(height: 15),
-
-                  // Password field
                   const Text(
                     'Password',
                     style: TextStyle(
@@ -348,69 +386,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       }
                     },
                   ),
-
-                  const SizedBox(height: 15),
-
-                  // Remember me and Forgot Password
-                  // Row(
-                  //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  //   children: [
-                  //     // Remember me
-                  //     Row(
-                  //       children: [
-                  //         SizedBox(
-                  //           height: 24,
-                  //           width: 24,
-                  //           child: Checkbox(
-                  //             value: _rememberMe,
-                  //             onChanged: (value) {
-                  //               setState(() => _rememberMe = value ?? false);
-                  //             },
-                  //             activeColor: const Color(0xFF001F54),
-                  //             shape: RoundedRectangleBorder(
-                  //               borderRadius: BorderRadius.circular(4),
-                  //             ),
-                  //           ),
-                  //         ),
-                  //         const SizedBox(width: 8),
-                  //         const Text(
-                  //           'Remember me',
-                  //           style: TextStyle(
-                  //             fontSize: 12,
-                  //             color: Colors.grey,
-                  //           ),
-                  //         ),
-                  //       ],
-                  //     ),
-                  //     // Forgot Password
-                  //     // TextButton(
-                  //     //   onPressed: () {
-                  //     //     // TODO: Implementasi Forget Password
-                  //     //     ScaffoldMessenger.of(context).showSnackBar(
-                  //     //       const SnackBar(
-                  //     //           content: Text('Forget Password (coming soon)')),
-                  //     //     );
-                  //     //   },
-                  //     //   style: TextButton.styleFrom(
-                  //     //     padding: EdgeInsets.zero,
-                  //     //     minimumSize: const Size(10, 10),
-                  //     //     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  //     //   ),
-                  //     //   child: const Text(
-                  //     //     'Forgot Password',
-                  //     //     style: TextStyle(
-                  //     //       color: Color(0xFF001F54),
-                  //     //       fontSize: 12,
-                  //     //       fontWeight: FontWeight.w500,
-                  //     //     ),
-                  //     //   ),
-                  //     // ),
-                  //   ],
-                  // ),
-
                   const SizedBox(height: 25),
-
-                  // Login button
                   _isLoading
                       ? const Center(
                           child: CircularProgressIndicator(
@@ -436,6 +412,25 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                         ),
+                  const SizedBox(height: 15),
+                  Center(
+                    child: TextButton(
+                      onPressed: _showEmergencyContactDialog,
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 15),
+                        minimumSize: const Size(10, 10),
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: const Text(
+                        'Emergency Contact',
+                        style: TextStyle(
+                          color: Color(0xFF001F54),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -450,28 +445,15 @@ class WaveClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
     final path = Path();
-
-    // Start at top-left corner
     path.moveTo(0, 0);
-
-    // Draw line to the left side where the curve will start
     path.lineTo(0, size.height - 60);
-
-    // Create a half-circle curve at the bottom
     path.quadraticBezierTo(
-        size.width / 2, // Control point x (middle of width)
-        size.height + 40, // Control point y (below the bottom edge)
-        size.width, // End point x (right edge)
-        size.height -
-            60 // End point y (same height as where we started the curve)
-        );
-
-    // Draw line up to top-right corner
+        size.width / 2,
+        size.height + 40,
+        size.width,
+        size.height - 60);
     path.lineTo(size.width, 0);
-
-    // Close the path (connects back to top-left)
     path.close();
-
     return path;
   }
 
